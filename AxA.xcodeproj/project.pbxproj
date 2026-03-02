@@ -1,0 +1,295 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1768284CA4BE363B5E4E9C33 /* VirtualJoystickNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACCD45322DD322CBDB0DA15 /* VirtualJoystickNode.swift */; };
+		214325BBCE4255A06B256B11 /* SpawnBeachScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA815117BA931CF7FE2F09E /* SpawnBeachScene.swift */; };
+		4E73D4F99E4EFE8095D44519 /* SpriteKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 316A77BE010C1B473993EBFF /* SpriteKit.framework */; };
+		50A6E128DF926FF4B6815AFD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D3F01335B0EC07B2DB697B /* Constants.swift */; };
+		542A7AB9B7224D3F2A912D12 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C242D1DD4F742100005C53 /* GameViewController.swift */; };
+		616D015369239910CFA553B1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EDE22C0DA7781B346887EBB /* AppDelegate.swift */; };
+		654E86DBBFA56DF6D4B2584A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 46FF9947635267EB75C1A3FD /* LaunchScreen.storyboard */; };
+		ADFA3744314B9FE0EAA29A4A /* GameplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1FB889098B2750D38B4B5BF /* GameplayKit.framework */; };
+		C6A21D10EB9BE82D7D285E08 /* TileMapBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6709308E2C8352F76C0817D7 /* TileMapBuilder.swift */; };
+		C6F4F45CE934B0B934A45FC7 /* PlayerNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C30B3C73BD9230D0B3483 /* PlayerNode.swift */; };
+		E42E577EC3C3C69D9FA51461 /* AttackButtonNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A0E85BC7F3BF3AEE90D211 /* AttackButtonNode.swift */; };
+		FC88C69AB585B3B3E8B90E72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA22F02EBB3B2D55C8BEA003 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1EDE22C0DA7781B346887EBB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		316A77BE010C1B473993EBFF /* SpriteKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SpriteKit.framework; sourceTree = "<group>"; };
+		3D7C30B3C73BD9230D0B3483 /* PlayerNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerNode.swift; sourceTree = "<group>"; };
+		46FF9947635267EB75C1A3FD /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		56D3F01335B0EC07B2DB697B /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		6709308E2C8352F76C0817D7 /* TileMapBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileMapBuilder.swift; sourceTree = "<group>"; };
+		73A0E85BC7F3BF3AEE90D211 /* AttackButtonNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttackButtonNode.swift; sourceTree = "<group>"; };
+		8AA815117BA931CF7FE2F09E /* SpawnBeachScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpawnBeachScene.swift; sourceTree = "<group>"; };
+		B14216E1B0C07C8B686C7524 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		CA22F02EBB3B2D55C8BEA003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CACCD45322DD322CBDB0DA15 /* VirtualJoystickNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualJoystickNode.swift; sourceTree = "<group>"; };
+		E1FB889098B2750D38B4B5BF /* GameplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = GameplayKit.framework; sourceTree = "<group>"; };
+		ECC2536A12F05EE768848D18 /* AxA.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AxA.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9C242D1DD4F742100005C53 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F81797C15AF92CFFC26DCE4A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4E73D4F99E4EFE8095D44519 /* SpriteKit.framework in Frameworks */,
+				ADFA3744314B9FE0EAA29A4A /* GameplayKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1CD110A740471052E0CFEE16 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				ECC2536A12F05EE768848D18 /* AxA.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2E385B0D74F5FF209D773ED4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E1FB889098B2750D38B4B5BF /* GameplayKit.framework */,
+				316A77BE010C1B473993EBFF /* SpriteKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2F938FF7E2CAA474810B232B /* Tiles */ = {
+			isa = PBXGroup;
+			children = (
+				6709308E2C8352F76C0817D7 /* TileMapBuilder.swift */,
+			);
+			path = Tiles;
+			sourceTree = "<group>";
+		};
+		584549D6F49A6F97EC1C185E /* Scenes */ = {
+			isa = PBXGroup;
+			children = (
+				8AA815117BA931CF7FE2F09E /* SpawnBeachScene.swift */,
+			);
+			path = Scenes;
+			sourceTree = "<group>";
+		};
+		7CE879FD910BC68B7EDFDAFF = {
+			isa = PBXGroup;
+			children = (
+				88A1590535C9D46260B99AC2 /* AxA */,
+				2E385B0D74F5FF209D773ED4 /* Frameworks */,
+				1CD110A740471052E0CFEE16 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		88A1590535C9D46260B99AC2 /* AxA */ = {
+			isa = PBXGroup;
+			children = (
+				A60A9AB69C87F402C559DE30 /* Nodes */,
+				584549D6F49A6F97EC1C185E /* Scenes */,
+				A9601C390B0FA3E937DE0AD3 /* Support */,
+				2F938FF7E2CAA474810B232B /* Tiles */,
+				56D3F01335B0EC07B2DB697B /* Constants.swift */,
+			);
+			path = AxA;
+			sourceTree = "<group>";
+		};
+		A60A9AB69C87F402C559DE30 /* Nodes */ = {
+			isa = PBXGroup;
+			children = (
+				73A0E85BC7F3BF3AEE90D211 /* AttackButtonNode.swift */,
+				3D7C30B3C73BD9230D0B3483 /* PlayerNode.swift */,
+				CACCD45322DD322CBDB0DA15 /* VirtualJoystickNode.swift */,
+			);
+			path = Nodes;
+			sourceTree = "<group>";
+		};
+		A9601C390B0FA3E937DE0AD3 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				1EDE22C0DA7781B346887EBB /* AppDelegate.swift */,
+				CA22F02EBB3B2D55C8BEA003 /* Assets.xcassets */,
+				F9C242D1DD4F742100005C53 /* GameViewController.swift */,
+				B14216E1B0C07C8B686C7524 /* Info.plist */,
+				46FF9947635267EB75C1A3FD /* LaunchScreen.storyboard */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BEBEE97B7EAEB94ED4C97E18 /* AxA */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0452289115B1971C55D33195 /* Build configuration list for PBXNativeTarget "AxA" */;
+			buildPhases = (
+				66804EBC88336CC238565E70 /* Sources */,
+				2538A4109489F5FB2842EB80 /* Resources */,
+				F81797C15AF92CFFC26DCE4A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AxA;
+			productName = AxA;
+			productReference = ECC2536A12F05EE768848D18 /* AxA.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C9D23E828DF269368C77EC75 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					BEBEE97B7EAEB94ED4C97E18 = {
+						DevelopmentTeam = 89NX9R78Y7;
+					};
+				};
+			};
+			buildConfigurationList = 2F6CE9ADC2127AE0D492AECC /* Build configuration list for PBXProject "AxA" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 7CE879FD910BC68B7EDFDAFF;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BEBEE97B7EAEB94ED4C97E18 /* AxA */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2538A4109489F5FB2842EB80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FC88C69AB585B3B3E8B90E72 /* Assets.xcassets in Resources */,
+				654E86DBBFA56DF6D4B2584A /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		66804EBC88336CC238565E70 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				616D015369239910CFA553B1 /* AppDelegate.swift in Sources */,
+				E42E577EC3C3C69D9FA51461 /* AttackButtonNode.swift in Sources */,
+				50A6E128DF926FF4B6815AFD /* Constants.swift in Sources */,
+				542A7AB9B7224D3F2A912D12 /* GameViewController.swift in Sources */,
+				C6F4F45CE934B0B934A45FC7 /* PlayerNode.swift in Sources */,
+				214325BBCE4255A06B256B11 /* SpawnBeachScene.swift in Sources */,
+				C6A21D10EB9BE82D7D285E08 /* TileMapBuilder.swift in Sources */,
+				1768284CA4BE363B5E4E9C33 /* VirtualJoystickNode.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		53612E0B1E81D6F0674A180E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 89NX9R78Y7;
+				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = AxA/Support/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tombragg.AxA;
+				PRODUCT_NAME = AxA;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				UIRequiresFullScreen = YES;
+			};
+			name = Release;
+		};
+		8E108DF2993F3F4D074A86E5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 89NX9R78Y7;
+				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = AxA/Support/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tombragg.AxA;
+				PRODUCT_NAME = AxA;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				UIRequiresFullScreen = YES;
+			};
+			name = Debug;
+		};
+		9F8707F5FE20E7291576365F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+		D42884445CAB5FC7948E5236 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0452289115B1971C55D33195 /* Build configuration list for PBXNativeTarget "AxA" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8E108DF2993F3F4D074A86E5 /* Debug */,
+				53612E0B1E81D6F0674A180E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		2F6CE9ADC2127AE0D492AECC /* Build configuration list for PBXProject "AxA" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D42884445CAB5FC7948E5236 /* Debug */,
+				9F8707F5FE20E7291576365F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C9D23E828DF269368C77EC75 /* Project object */;
+}

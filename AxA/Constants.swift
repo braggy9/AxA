@@ -1,0 +1,110 @@
+// Constants.swift
+// AxA — all magic numbers live here. Never hardcode these elsewhere.
+
+import SpriteKit
+
+// MARK: - Screen / World
+
+enum World {
+    /// Logical design resolution. We design at this size and scale up.
+    static let designWidth: CGFloat = 320
+    static let designHeight: CGFloat = 180
+
+    /// Tile size in logical pixels.
+    static let tileSize: CGFloat = 16
+
+    /// Spawn Beach map dimensions (in tiles)
+    static let spawnBeachCols: Int = 20
+    static let spawnBeachRows: Int = 11
+}
+
+// MARK: - Physics Categories
+
+enum PhysicsCategory {
+    static let none:          UInt32 = 0
+    static let player:        UInt32 = 1 << 0  // 1
+    static let enemy:         UInt32 = 1 << 1  // 2
+    static let projectile:    UInt32 = 1 << 2  // 4
+    static let wall:          UInt32 = 1 << 3  // 8
+    static let water:         UInt32 = 1 << 4  // 16
+    static let interactable:  UInt32 = 1 << 5  // 32
+    static let trigger:       UInt32 = 1 << 6  // 64
+    static let crystal:       UInt32 = 1 << 7  // 128
+}
+
+// MARK: - Player
+
+enum PlayerConst {
+    static let walkSpeed: CGFloat = 80          // points per second
+    static let size: CGSize = CGSize(width: 16, height: 16)
+    static let physicsRadius: CGFloat = 6
+    static let zPosition: CGFloat = 10
+    static let animFrameDuration: TimeInterval = 0.15
+}
+
+// MARK: - Camera
+
+enum CameraConst {
+    /// How tightly the camera tracks the player (0 = instant, 1 = never catches up)
+    static let followSmoothing: CGFloat = 0.12
+}
+
+// MARK: - Virtual Joystick
+
+enum JoystickConst {
+    static let baseRadius: CGFloat = 44          // minimum touch target
+    static let knobRadius: CGFloat = 22
+    static let maxDisplacement: CGFloat = 38     // how far knob can travel from centre
+    static let alpha: CGFloat = 0.75
+    static let baseColour = SKColor(red: 1, green: 1, blue: 1, alpha: 0.25)
+    static let knobColour = SKColor(red: 1, green: 1, blue: 1, alpha: 0.55)
+    /// Distance from left/bottom edge of screen, in points
+    static let xOffset: CGFloat = 80
+    static let yOffset: CGFloat = 80
+    static let zPosition: CGFloat = 100
+}
+
+// MARK: - Buttons
+
+enum ButtonConst {
+    static let size: CGFloat = 56             // minimum 44pt tap target, give a bit extra
+    static let attackAlpha: CGFloat = 0.75
+    static let xOffsetFromRight: CGFloat = 90
+    static let yOffsetFromBottom: CGFloat = 80
+    static let zPosition: CGFloat = 100
+}
+
+// MARK: - Tile
+
+enum TileConst {
+    // Z-layers
+    static let groundZ: CGFloat = 0
+    static let detailZ: CGFloat = 1
+    static let objectZ: CGFloat = 2
+}
+
+// MARK: - Colours (placeholder palette — Salt World Lake)
+
+enum Palette {
+    static let saltGround    = SKColor(red: 0.94, green: 0.72, blue: 0.70, alpha: 1) // Himalayan pink
+    static let saltSand      = SKColor(red: 0.99, green: 0.88, blue: 0.80, alpha: 1) // pale peach sand
+    static let water         = SKColor(red: 0.35, green: 0.72, blue: 0.95, alpha: 1) // bright lake blue
+    static let waterDeep     = SKColor(red: 0.20, green: 0.50, blue: 0.80, alpha: 1) // deeper water
+    static let crystal       = SKColor(red: 1.00, green: 0.90, blue: 0.95, alpha: 1) // pink crystal
+    static let nonoTreeTrunk = SKColor(red: 0.45, green: 0.28, blue: 0.12, alpha: 1) // brown
+    static let nonoTreeLeaf  = SKColor(red: 0.20, green: 0.65, blue: 0.25, alpha: 1) // green
+    static let wizBody       = SKColor(red: 0.60, green: 0.35, blue: 0.80, alpha: 1) // purple
+    static let wizHat        = SKColor(red: 0.30, green: 0.15, blue: 0.55, alpha: 1) // dark purple
+    static let wizStaff      = SKColor(red: 0.80, green: 0.65, blue: 0.30, alpha: 1) // gold
+}
+
+// MARK: - Z-Positions (scene-level)
+
+enum ZPos {
+    static let ground: CGFloat = 0
+    static let object: CGFloat = 2
+    static let player: CGFloat = 10
+    static let enemy:  CGFloat = 10
+    static let hud:    CGFloat = 50
+    static let ui:     CGFloat = 100
+}

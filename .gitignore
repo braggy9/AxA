@@ -1,4 +1,5 @@
-# Xcode
+# Xcode — generated files (project.yml is source of truth, not .xcodeproj)
+# project.pbxproj IS committed so Xcode works without running xcodegen first.
 *.xcodeproj/project.xcworkspace/
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
