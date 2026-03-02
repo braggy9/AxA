@@ -108,3 +108,56 @@ enum ZPos {
     static let hud:    CGFloat = 50
     static let ui:     CGFloat = 100
 }
+
+// MARK: - Enemy Constants
+
+enum EnemyConst {
+    static let saltKnightHealth = 2
+    static let saltKnightPatrolSpeed: CGFloat = 30
+    static let saltKnightChaseSpeed: CGFloat = 55
+    static let saltKnightChaseRadius: CGFloat = 80
+    static let saltKnightWaypointTolerance: CGFloat = 4
+    static let saltKnightDamage = 1
+    static let saltKnightKnockback: CGFloat = 180
+    static let crystalDropMin = 1
+    static let crystalDropMax = 3
+}
+
+// MARK: - Player Combat Constants
+
+enum PlayerCombatConst {
+    static let maxHealth = 5
+    static let attackCooldown: TimeInterval = 0.5
+    static let attackHitboxSize = CGSize(width: 20, height: 16)
+    static let attackHitboxOffset: CGFloat = 12
+    static let attackActiveDuration: TimeInterval = 0.2
+    static let attackDamage = 1
+    static let invincibilityDuration: TimeInterval = 1.5
+    static let knockbackForce: CGFloat = 200
+    static let respawnDelay: TimeInterval = 1.5
+}
+
+// MARK: - HUD Constants
+
+enum HUDConst {
+    static let healthBarWidth: CGFloat = 80
+    static let healthBarHeight: CGFloat = 8
+    static let healthBarX: CGFloat = -120  // relative to camera centre
+    static let healthBarY: CGFloat = 70    // relative to camera centre
+    static let crystalCounterX: CGFloat = -120
+    static let crystalCounterY: CGFloat = 55
+}
+
+// MARK: - Room Constants
+
+enum RoomConst {
+    static let transitionTriggerWidth: CGFloat = 8
+    static let transitionFadeDuration: TimeInterval = 0.3
+}
+
+// MARK: - World (Crystal Fields)
+
+extension World {
+    static let crystalFieldsCols: Int = 20
+    static let crystalFieldsRows: Int = 11
+}

@@ -95,6 +95,82 @@ enum TileMapBuilder {
         return (groundMap, walls)
     }
 
+    // MARK: - Crystal Fields Map
+
+    /// Builds the Crystal Fields room: open salt terrain, crystal clusters, 4 Salt Knights.
+    /// 20 columns x 11 rows. Narrow water borders top/bottom, sand edges left/right.
+    static func buildCrystalFields() -> (ground: SKTileMapNode, walls: [SKNode]) {
+        let tileSize = CGSize(width: World.tileSize, height: World.tileSize)
+        let cols = World.crystalFieldsCols
+        let rows = World.crystalFieldsRows
+
+        // Layout: mostly open salt ground for combat.
+        // Crystal clusters (C) scattered in groups of 2-3.
+        // Water border top/bottom (rows 10, 0), sand edges (rows 9, 1).
+        let groundLayout: [[TileType]] = [
+            // Row 10 (top)
+            [.water, .water, .water, .water, .water, .water, .water, .water, .water, .water,
+             .water, .water, .water, .water, .water, .water, .water, .water, .water, .water],
+            // Row 9
+            [.water, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand,
+             .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .water],
+            // Row 8 -- crystal cluster areas
+            [.water, .saltSand, .saltGround, .crystal, .crystal, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround,
+             .saltGround, .saltGround, .saltGround, .saltGround, .crystal, .crystal, .saltGround, .saltGround, .saltSand, .water],
+            // Row 7
+            [.water, .saltSand, .crystal, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround,
+             .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .crystal, .saltGround, .saltGround, .saltSand, .water],
+            // Row 6
+            [.water, .saltSand, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround,
+             .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltSand, .water],
+            // Row 5 (middle -- wide open arena)
+            [.water, .saltSand, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround,
+             .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltSand, .water],
+            // Row 4
+            [.water, .saltSand, .saltGround, .saltGround, .saltGround, .crystal, .crystal, .saltGround, .saltGround, .saltGround,
+             .saltGround, .saltGround, .crystal, .crystal, .saltGround, .saltGround, .saltGround, .saltGround, .saltSand, .water],
+            // Row 3
+            [.water, .saltSand, .saltGround, .saltGround, .saltGround, .crystal, .saltGround, .saltGround, .saltGround, .saltGround,
+             .saltGround, .saltGround, .saltGround, .crystal, .saltGround, .saltGround, .saltGround, .saltGround, .saltSand, .water],
+            // Row 2
+            [.water, .saltSand, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround,
+             .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltGround, .saltSand, .water],
+            // Row 1
+            [.water, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand,
+             .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .saltSand, .water],
+            // Row 0 (bottom)
+            [.water, .water, .water, .water, .water, .water, .water, .water, .water, .water,
+             .water, .water, .water, .water, .water, .water, .water, .water, .water, .water],
+        ]
+
+        let tileGroups = TileType.allCases.map { type -> SKTileGroup in
+            let tex = makeTexture(for: type)
+            tex.filteringMode = .nearest
+            let def = SKTileDefinition(texture: tex, size: tileSize)
+            return SKTileGroup(tileDefinition: def)
+        }
+
+        let tileSet = SKTileSet(tileGroups: tileGroups)
+
+        let groundMap = SKTileMapNode(tileSet: tileSet,
+                                      columns: cols,
+                                      rows: rows,
+                                      tileSize: tileSize)
+        groundMap.zPosition = TileConst.groundZ
+        groundMap.enableAutomapping = false
+
+        for (rowIndex, row) in groundLayout.enumerated() {
+            for (colIndex, type) in row.enumerated() {
+                let group = tileGroups[type.rawValue]
+                groundMap.setTileGroup(group, forColumn: colIndex, row: rowIndex)
+            }
+        }
+
+        let walls = buildWallNodes(from: groundLayout, map: groundMap, tileSize: tileSize)
+
+        return (groundMap, walls)
+    }
+
     // MARK: Physics
     // Each blocking tile gets its own invisible SKSpriteNode with a physics body.
     // Simple, reliable, and easy to debug.
