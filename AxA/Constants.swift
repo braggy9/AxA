@@ -237,3 +237,65 @@ enum SpecialButtonConst {
     static let yOffsetFromBottom: CGFloat = 80
     static let zPosition: CGFloat = 100
 }
+
+// MARK: - Character Types
+
+enum CharacterType: String, CaseIterable {
+    case wiz
+    case bob
+}
+
+// MARK: - Bob Constants
+
+enum BobConst {
+    static let maxHealth                  = 4
+    static let peckCooldown: TimeInterval = 0.3
+    static let peckHitboxSize             = CGSize(width: 14, height: 12)
+    static let peckHitboxOffset: CGFloat  = 9
+    static let flutterDistance: CGFloat   = 44
+    static let flutterDuration: TimeInterval = 0.22
+}
+
+// MARK: - Snack Bag
+
+enum SnackBagConst {
+    static let size                       = CGSize(width: 14, height: 14)
+    static let floatAmplitude: CGFloat    = 2.5
+    static let floatDuration: TimeInterval = 0.85
+    static let openAnimDuration: TimeInterval = 0.55
+}
+
+// MARK: - Soft Ground (Bob dig spots)
+
+enum SoftGroundConst {
+    static let size                       = CGSize(width: 14, height: 10)
+    static let detectionRadius: CGFloat   = 14
+    static let digDuration: TimeInterval  = 0.5
+    static let crystalReward              = 3
+}
+
+// MARK: - Physics (Stage 4)
+
+extension PhysicsCategory {
+    static let snackBag:   UInt32 = 1 << 13
+    static let softGround: UInt32 = 1 << 14
+}
+
+// MARK: - HUD Portrait (Stage 4)
+
+extension HUDConst {
+    static let portraitSize: CGFloat  = 20
+    static let portraitX: CGFloat     = -148
+    static let portraitY: CGFloat     = 63
+}
+
+// MARK: - Palette (Stage 4)
+
+extension Palette {
+    static let bobBody     = SKColor(red: 0.98, green: 0.90, blue: 0.30, alpha: 1) // chicken yellow
+    static let bobBeak     = SKColor(red: 0.95, green: 0.55, blue: 0.10, alpha: 1) // orange beak
+    static let bobComb     = SKColor(red: 0.88, green: 0.12, blue: 0.12, alpha: 1) // red comb
+    static let snackBagGold = SKColor(red: 0.95, green: 0.78, blue: 0.18, alpha: 1) // gold bag
+    static let softDirt    = SKColor(red: 0.38, green: 0.28, blue: 0.18, alpha: 1) // dark soil
+    static let celebSparkle = SKColor(red: 1.00, green: 0.90, blue: 0.30, alpha: 1) // celebration yellow
+}

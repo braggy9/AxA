@@ -1,7 +1,7 @@
 // BaseGameScene.swift
 // AxA — Abstract base class for all room scenes.
-// Handles: camera, player, HUD, joystick, attack button, touch routing,
-// physics contacts, room transitions, enemy management.
+// Handles: camera, player, HUD, joystick, buttons, touch routing,
+// physics contacts, room transitions, enemy management, character system.
 //
 // Subclasses must:
 //   1. Set groundMap (SKTileMapNode) and call addChild(groundMap) + wall nodes
@@ -20,17 +20,26 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
     var mapCols: Int = 20
     var mapRows: Int = 11
 
-    /// Which rooms connect from each edge of this room.
     var roomTransitions: [Edge: RoomID] = [:]
-
-    /// Enemies to spawn: (type, column, row) in tile coordinates.
     var enemySpawns: [(type: EnemyType, col: Int, row: Int)] = []
 
-    /// Player start position in scene coordinates. Subclass sets this in setupTileMap.
     var playerStartPosition: CGPoint = .zero
-
-    /// Alternative: position player at an incoming edge. Takes priority if set.
     var playerStartEdge: Edge?
+
+    // MARK: - Character State (passed between rooms)
+
+    var activeCharacter: CharacterType = .wiz
+    var unlockedCharacters: Set<CharacterType> = [.wiz]
+    var wizHealth: Int = PlayerCombatConst.maxHealth
+    var bobHealth: Int = BobConst.maxHealth
+
+    // Crystal counter (passed between rooms)
+    var crystalCount: Int = 0 {
+        didSet { hud?.setCrystals(crystalCount) }
+    }
+
+    // Key state (passed between rooms)
+    var hasKey: Bool = false
 
     // MARK: - Nodes
 
@@ -39,26 +48,19 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
     private var attackButton: AttackButtonNode!
     private(set) var cam: SKCameraNode!
     private var hud: HUDNode!
+    private var specialButton: SpecialButtonNode!
 
     private var saltKnights:    [SaltKnightNode]    = []
     private var saltProtectors: [SaltProtectorNode] = []
-
-    // Crystal counter
-    private var crystalCount: Int = 0 {
-        didSet { hud.setCrystals(crystalCount) }
-    }
-
-    // Key state (passed between rooms)
-    var hasKey: Bool = false
 
     // Grapple — set when player enters a grapple point's detection zone
     private var nearbyGrapplePoint: GrapplePointNode?
     private var isGrappling: Bool = false
 
-    // Special button
-    private var specialButton: SpecialButtonNode!
+    // Dig spot — set when Bob enters a soft ground detection zone
+    private var nearbyDigSpot: SoftGroundNode?
 
-    // Transition guard — prevent firing twice
+    // Transition guard
     private var isTransitioning: Bool = false
 
     // dt tracking
@@ -72,18 +74,14 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
 
         setupCamera()
-        subclassSetup()          // subclass builds tile map and configures properties
+        subclassSetup()
         setupPlayer()
         setupEnemies()
         setupHUD()
         setupTransitionTriggers()
     }
 
-    /// Override in subclass to build tile map, set mapCols/mapRows,
-    /// roomTransitions, enemySpawns, playerStartPosition.
-    func subclassSetup() {
-        // no-op in base
-    }
+    func subclassSetup() { /* no-op in base */ }
 
     // MARK: - Camera
 
@@ -95,8 +93,8 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
 
     func updateCamera() {
         guard let map = groundMap else { return }
-        let target  = player.position
-        let current = cam.position
+        let target   = player.position
+        let current  = cam.position
         let smoothed = CGPoint(
             x: current.x + (target.x - current.x) * CameraConst.followSmoothing,
             y: current.y + (target.y - current.y) * CameraConst.followSmoothing
@@ -105,28 +103,36 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     private func clampCameraPosition(_ pos: CGPoint, map: SKTileMapNode) -> CGPoint {
-        let mapW = CGFloat(mapCols) * World.tileSize
-        let mapH = CGFloat(mapRows) * World.tileSize
-        let halfMapW = mapW / 2
-        let halfMapH = mapH / 2
-        let halfViewW = size.width  / 2
-        let halfViewH = size.height / 2
+        let mapW   = CGFloat(mapCols) * World.tileSize
+        let mapH   = CGFloat(mapRows) * World.tileSize
+        let halfW  = mapW / 2
+        let halfH  = mapH / 2
+        let halfVW = size.width  / 2
+        let halfVH = size.height / 2
 
-        let minX = map.position.x - halfMapW + halfViewW
-        let maxX = map.position.x + halfMapW - halfViewW
-        let minY = map.position.y - halfMapH + halfViewH
-        let maxY = map.position.y + halfMapH - halfViewH
+        let minX = map.position.x - halfW + halfVW
+        let maxX = map.position.x + halfW - halfVW
+        let minY = map.position.y - halfH + halfVH
+        let maxY = map.position.y + halfH - halfVH
 
-        let clampedX = minX < maxX ? pos.x.clamped(to: minX...maxX) : map.position.x
-        let clampedY = minY < maxY ? pos.y.clamped(to: minY...maxY) : map.position.y
-
-        return CGPoint(x: clampedX, y: clampedY)
+        return CGPoint(
+            x: minX < maxX ? pos.x.clamped(to: minX...maxX) : map.position.x,
+            y: minY < maxY ? pos.y.clamped(to: minY...maxY) : map.position.y
+        )
     }
 
     // MARK: - Player
 
     private func setupPlayer() {
         player = PlayerNode()
+
+        // Restore character state from previous room
+        player.activeCharacter    = activeCharacter
+        player.unlockedCharacters = unlockedCharacters
+        player.wizHealth          = wizHealth
+        player.bobHealth          = bobHealth
+        player.maxHealth          = activeCharacter == .wiz ? PlayerCombatConst.maxHealth : BobConst.maxHealth
+        player.currentHealth      = activeCharacter == .wiz ? wizHealth : bobHealth
 
         if let edge = playerStartEdge {
             player.position = entryPosition(for: edge)
@@ -135,13 +141,16 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         player.onHealthChanged = { [weak self] current, max in
-            self?.hud.setHealth(current, max: max)
+            self?.hud?.setHealth(current, max: max)
+        }
+        player.onCharacterChanged = { [weak self] character in
+            self?.hud?.setCharacter(character)
+            self?.updateSpecialButtonHint()
         }
 
         addChild(player)
     }
 
-    /// Returns a position just inside the map edge.
     private func entryPosition(for edge: Edge) -> CGPoint {
         guard let map = groundMap else { return .zero }
         let mapW  = CGFloat(mapCols) * World.tileSize
@@ -178,19 +187,17 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         layoutHUD()
         hud.setHealth(player.currentHealth, max: player.maxHealth)
         hud.setCrystals(crystalCount)
+        hud.setCharacter(player.activeCharacter)
+        updateSpecialButtonHint()
     }
 
     private func layoutHUD() {
         let halfW = size.width  / 2
         let halfH = size.height / 2
-        attackButton.position = CGPoint(
-            x:  halfW - ButtonConst.xOffsetFromRight,
-            y: -halfH + ButtonConst.yOffsetFromBottom
-        )
-        specialButton.position = CGPoint(
-            x:  halfW - SpecialButtonConst.xOffsetFromRight,
-            y: -halfH + SpecialButtonConst.yOffsetFromBottom
-        )
+        attackButton.position = CGPoint(x:  halfW - ButtonConst.xOffsetFromRight,
+                                        y: -halfH + ButtonConst.yOffsetFromBottom)
+        specialButton.position = CGPoint(x:  halfW - SpecialButtonConst.xOffsetFromRight,
+                                         y: -halfH + SpecialButtonConst.yOffsetFromBottom)
     }
 
     // MARK: - Enemies
@@ -202,17 +209,17 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
             switch spawn.type {
             case .saltKnight:
                 let knight = SaltKnightNode()
-                knight.position = spawnPos
-                knight.playerRef = player
-                let patrolOffset: CGFloat = World.tileSize * 3
-                knight.patrolStart = CGPoint(x: spawnPos.x - patrolOffset, y: spawnPos.y)
-                knight.patrolEnd   = CGPoint(x: spawnPos.x + patrolOffset, y: spawnPos.y)
+                knight.position   = spawnPos
+                knight.playerRef  = player
+                let offset: CGFloat = World.tileSize * 3
+                knight.patrolStart = CGPoint(x: spawnPos.x - offset, y: spawnPos.y)
+                knight.patrolEnd   = CGPoint(x: spawnPos.x + offset, y: spawnPos.y)
                 addChild(knight)
                 saltKnights.append(knight)
 
             case .saltProtector:
                 let protector = SaltProtectorNode()
-                protector.position = spawnPos
+                protector.position  = spawnPos
                 protector.playerRef = player
                 protector.onFireProjectile = { [weak self, weak protector] velocity in
                     guard let self = self, let protector = protector else { return }
@@ -227,18 +234,47 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
-    // MARK: - Grapple Hook
+    // MARK: - Special Button
+
+    private func updateSpecialButtonHint() {
+        switch player.activeCharacter {
+        case .wiz:
+            if nearbyGrapplePoint != nil {
+                specialButton.showPrompt("Grapple!")
+            } else {
+                specialButton.hidePrompt()
+            }
+        case .bob:
+            if nearbyDigSpot != nil {
+                specialButton.showPrompt("Dig!")
+            } else {
+                specialButton.showPrompt("Flutter!")
+            }
+        }
+    }
 
     func useSpecial() {
+        switch player.activeCharacter {
+        case .wiz:
+            performGrapple()
+        case .bob:
+            if let digSpot = nearbyDigSpot, !digSpot.isDug {
+                performDig(at: digSpot)
+            } else {
+                player.performFlutterDash()
+            }
+        }
+    }
+
+    // MARK: - Grapple Hook
+
+    private func performGrapple() {
         guard let grapplePoint = nearbyGrapplePoint, !isGrappling else { return }
         isGrappling = true
 
-        let targetPos = CGPoint(
-            x: grapplePoint.position.x + grapplePoint.landingOffset.x,
-            y: grapplePoint.position.y + grapplePoint.landingOffset.y
-        )
+        let targetPos = CGPoint(x: grapplePoint.position.x + grapplePoint.landingOffset.x,
+                                y: grapplePoint.position.y + grapplePoint.landingOffset.y)
 
-        // Draw rope
         let rope = SKShapeNode()
         let ropePath = CGMutablePath()
         ropePath.move(to: player.position)
@@ -249,8 +285,7 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         rope.zPosition = ZPos.player - 1
         addChild(rope)
 
-        // Zip player across
-        player.physicsBody?.velocity = .zero
+        player.physicsBody?.velocity  = .zero
         player.physicsBody?.isDynamic = false
 
         let zipAction = SKAction.sequence([
@@ -267,6 +302,44 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         player.run(zipAction, withKey: "grapple")
     }
 
+    // MARK: - Dig
+
+    private func performDig(at spot: SoftGroundNode) {
+        nearbyDigSpot = nil
+        updateSpecialButtonHint()
+
+        spot.dig()
+
+        // Spawn crystals after the dig animation completes
+        spot.onDug = { [weak self] worldPos in
+            guard let self = self else { return }
+            for i in 0..<spot.hiddenCrystals {
+                let crystal = CrystalNode()
+                let spread  = CGFloat(i) * 8 - CGFloat(spot.hiddenCrystals - 1) * 4
+                crystal.position = CGPoint(x: worldPos.x + spread, y: worldPos.y + 6)
+                self.addChild(crystal)
+            }
+        }
+    }
+
+    // MARK: - Character Switch (called from touch handler)
+
+    private func switchNextCharacter() {
+        let unlocked = CharacterType.allCases.filter { player.unlockedCharacters.contains($0) }
+        guard unlocked.count > 1 else { return }
+        let current   = unlocked.firstIndex(of: player.activeCharacter) ?? 0
+        let nextChar  = unlocked[(current + 1) % unlocked.count]
+        player.switchTo(character: nextChar)
+        updateSpecialButtonHint()
+    }
+
+    // Called by subclass scenes when a snack bag unlock happens
+    func playerUnlockedCharacter(_ character: CharacterType) {
+        player.unlock(character)
+        player.switchTo(character: character)
+        updateSpecialButtonHint()
+    }
+
     // MARK: - Room Transitions
 
     private func setupTransitionTriggers() {
@@ -279,28 +352,25 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         let tw   = RoomConst.transitionTriggerWidth
 
         let edgeData: [(Edge, CGPoint, CGSize)] = [
-            (.left,   CGPoint(x: cx - mapW / 2,      y: cy),          CGSize(width: tw, height: mapH)),
-            (.right,  CGPoint(x: cx + mapW / 2,      y: cy),          CGSize(width: tw, height: mapH)),
-            (.bottom, CGPoint(x: cx, y: cy - mapH / 2),               CGSize(width: mapW, height: tw)),
-            (.top,    CGPoint(x: cx, y: cy + mapH / 2),               CGSize(width: mapW, height: tw)),
+            (.left,   CGPoint(x: cx - mapW/2, y: cy), CGSize(width: tw, height: mapH)),
+            (.right,  CGPoint(x: cx + mapW/2, y: cy), CGSize(width: tw, height: mapH)),
+            (.bottom, CGPoint(x: cx, y: cy - mapH/2), CGSize(width: mapW, height: tw)),
+            (.top,    CGPoint(x: cx, y: cy + mapH/2), CGSize(width: mapW, height: tw)),
         ]
 
         for (edge, pos, triggerSize) in edgeData {
             guard roomTransitions[edge] != nil else { continue }
-
             let trigger = SKSpriteNode(color: .clear, size: triggerSize)
             trigger.position = pos
-            trigger.name = "trigger_\(edge)"
+            trigger.name     = "trigger_\(edge)"
             trigger.zPosition = -1
-
             let body = SKPhysicsBody(rectangleOf: triggerSize)
-            body.isDynamic = false
+            body.isDynamic        = false
             body.affectedByGravity = false
             body.categoryBitMask    = PhysicsCategory.trigger
             body.collisionBitMask   = PhysicsCategory.none
             body.contactTestBitMask = PhysicsCategory.player
             trigger.physicsBody = body
-
             addChild(trigger)
         }
     }
@@ -309,24 +379,28 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         guard !isTransitioning else { return }
         isTransitioning = true
 
+        // Snapshot current character state before leaving
+        let currentWizHP  = player.activeCharacter == .wiz ? player.currentHealth : player.wizHealth
+        let currentBobHP  = player.activeCharacter == .bob ? player.currentHealth : player.bobHealth
+
         let transition = SKTransition.fade(withDuration: RoomConst.transitionFadeDuration)
 
         let destScene: BaseGameScene
         switch destination {
-        case .spawnBeach:
-            destScene = SpawnBeachScene(size: size)
-        case .crystalFields:
-            destScene = CrystalFieldsScene(size: size)
-        case .lakeShoreEast:
-            destScene = LakeShoreEastScene(size: size)
-        case .saltCave:
-            destScene = SaltCaveScene(size: size)
+        case .spawnBeach:   destScene = SpawnBeachScene(size: size)
+        case .crystalFields: destScene = CrystalFieldsScene(size: size)
+        case .lakeShoreEast: destScene = LakeShoreEastScene(size: size)
+        case .saltCave:     destScene = SaltCaveScene(size: size)
         }
 
-        destScene.scaleMode = scaleMode
-        destScene.playerStartEdge = oppositeEdge(edge)
-        destScene.crystalCount = crystalCount
-        destScene.hasKey = hasKey
+        destScene.scaleMode         = scaleMode
+        destScene.playerStartEdge   = oppositeEdge(edge)
+        destScene.crystalCount      = crystalCount
+        destScene.hasKey            = hasKey
+        destScene.activeCharacter   = player.activeCharacter
+        destScene.unlockedCharacters = player.unlockedCharacters
+        destScene.wizHealth         = currentWizHP
+        destScene.bobHealth         = currentBobHP
 
         view?.presentScene(destScene, transition: transition)
     }
@@ -346,18 +420,10 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         let dt: TimeInterval = min(currentTime - lastUpdateTime, 1.0 / 30.0)
         lastUpdateTime = currentTime
 
-        if joystick.isActive {
-            player.move(direction: joystick.direction, delta: dt)
-        } else {
-            player.move(direction: .zero, delta: dt)
-        }
+        player.move(direction: joystick.isActive ? joystick.direction : .zero, delta: dt)
 
-        for knight in saltKnights {
-            knight.update(deltaTime: dt)
-        }
-        for protector in saltProtectors {
-            protector.update(deltaTime: dt)
-        }
+        for knight    in saltKnights    { knight.update(deltaTime: dt) }
+        for protector in saltProtectors { protector.update(deltaTime: dt) }
 
         updateCamera()
     }
@@ -368,7 +434,6 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         let catA = contact.bodyA.categoryBitMask
         let catB = contact.bodyB.categoryBitMask
 
-        // Helper: find body matching a category
         func body(for category: UInt32) -> SKPhysicsBody? {
             if catA == category { return contact.bodyA }
             if catB == category { return contact.bodyB }
@@ -376,119 +441,107 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         // 1. Player ↔ Trigger → room transition
-        if (catA == PhysicsCategory.player && catB == PhysicsCategory.trigger) ||
+        if (catA == PhysicsCategory.player  && catB == PhysicsCategory.trigger) ||
            (catA == PhysicsCategory.trigger && catB == PhysicsCategory.player) {
             let triggerBody = body(for: PhysicsCategory.trigger)
-            if let triggerNode = triggerBody?.node,
-               let name = triggerNode.name,
+            if let name = triggerBody?.node?.name,
                let edge = edgeFromTriggerName(name),
-               let destination = roomTransitions[edge] {
-                transitionToRoom(destination, enteredFrom: edge)
+               let dest = roomTransitions[edge] {
+                transitionToRoom(dest, enteredFrom: edge)
             }
             return
         }
 
         // 2. Player ↔ Crystal → collect
-        if (catA == PhysicsCategory.player && catB == PhysicsCategory.crystal) ||
+        if (catA == PhysicsCategory.player  && catB == PhysicsCategory.crystal) ||
            (catA == PhysicsCategory.crystal && catB == PhysicsCategory.player) {
-            let crystalBody = body(for: PhysicsCategory.crystal)
-            if let crystalNode = crystalBody?.node as? CrystalNode {
-                crystalNode.onCollected = { [weak self] in
-                    self?.crystalCount += 1
-                }
-                crystalNode.collect()
+            let cb = body(for: PhysicsCategory.crystal)
+            if let node = cb?.node as? CrystalNode {
+                node.onCollected = { [weak self] in self?.crystalCount += 1 }
+                node.collect()
             }
             return
         }
 
-        // 3. Attack hitbox ↔ Enemy → enemy takes damage (with shield check for protectors)
+        // 3. Attack hitbox ↔ Enemy → damage (with shield check for protectors)
         if (catA == PhysicsCategory.projectile && catB == PhysicsCategory.enemy) ||
-           (catA == PhysicsCategory.enemy && catB == PhysicsCategory.projectile) {
-            let enemyBody = body(for: PhysicsCategory.enemy)
-            if let enemyNode = enemyBody?.node as? EnemyNode {
-                let dir = CGVector(
-                    dx: enemyNode.position.x - player.position.x,
-                    dy: enemyNode.position.y - player.position.y
-                )
-                // Shield check for protectors
-                if let protector = enemyNode as? SaltProtectorNode,
+           (catA == PhysicsCategory.enemy      && catB == PhysicsCategory.projectile) {
+            let eb = body(for: PhysicsCategory.enemy)
+            if let enemy = eb?.node as? EnemyNode {
+                let dir = CGVector(dx: enemy.position.x - player.position.x,
+                                   dy: enemy.position.y - player.position.y)
+                if let protector = enemy as? SaltProtectorNode,
                    protector.isShielding(attackDirection: dir) {
-                    // Attack blocked — shield spark
                     let spark = SKAction.sequence([
                         SKAction.colorize(with: .white, colorBlendFactor: 0.8, duration: 0.05),
                         SKAction.colorize(withColorBlendFactor: 0, duration: 0.05)
                     ])
                     protector.sprite.run(spark)
                 } else {
-                    enemyNode.takeDamage(PlayerCombatConst.attackDamage)
-                    enemyNode.knockback(from: dir)
+                    enemy.takeDamage(PlayerCombatConst.attackDamage)
+                    enemy.knockback(from: dir)
                 }
             }
             return
         }
 
         // 3b. Attack hitbox ↔ Breakable wall → shatter
-        if (catA == PhysicsCategory.projectile && catB == PhysicsCategory.breakableWall) ||
+        if (catA == PhysicsCategory.projectile   && catB == PhysicsCategory.breakableWall) ||
            (catA == PhysicsCategory.breakableWall && catB == PhysicsCategory.projectile) {
-            let wallBody = body(for: PhysicsCategory.breakableWall)
-            (wallBody?.node as? BreakableWallNode)?.takeDamage()
+            let wb = body(for: PhysicsCategory.breakableWall)
+            (wb?.node as? BreakableWallNode)?.takeDamage()
             return
         }
 
         // 4. Enemy body ↔ Player body → player takes damage
-        if (catA == PhysicsCategory.enemy && catB == PhysicsCategory.player) ||
+        if (catA == PhysicsCategory.enemy  && catB == PhysicsCategory.player) ||
            (catA == PhysicsCategory.player && catB == PhysicsCategory.enemy) {
-            let enemyBody = body(for: PhysicsCategory.enemy)
-            if let enemyNode = enemyBody?.node as? EnemyNode, enemyNode.health > 0 {
-                let dir = CGVector(
-                    dx: player.position.x - enemyNode.position.x,
-                    dy: player.position.y - enemyNode.position.y
-                )
-                let damage = (enemyNode is SaltProtectorNode)
-                    ? ProtectorConst.damage
-                    : EnemyConst.saltKnightDamage
-                player.takeDamage(damage, from: dir)
+            let eb = body(for: PhysicsCategory.enemy)
+            if let enemy = eb?.node as? EnemyNode, enemy.health > 0 {
+                let dir = CGVector(dx: player.position.x - enemy.position.x,
+                                   dy: player.position.y - enemy.position.y)
+                let dmg = (enemy is SaltProtectorNode) ? ProtectorConst.damage : EnemyConst.saltKnightDamage
+                player.takeDamage(dmg, from: dir)
             }
             return
         }
 
         // 5. Enemy projectile ↔ Player → player takes damage
         if (catA == PhysicsCategory.enemyProjectile && catB == PhysicsCategory.player) ||
-           (catA == PhysicsCategory.player && catB == PhysicsCategory.enemyProjectile) {
-            let projBody = body(for: PhysicsCategory.enemyProjectile)
+           (catA == PhysicsCategory.player           && catB == PhysicsCategory.enemyProjectile) {
+            let pb = body(for: PhysicsCategory.enemyProjectile)
             let dir = CGVector(
-                dx: player.position.x - (projBody?.node?.position.x ?? 0),
-                dy: player.position.y - (projBody?.node?.position.y ?? 0)
+                dx: player.position.x - (pb?.node?.position.x ?? 0),
+                dy: player.position.y - (pb?.node?.position.y ?? 0)
             )
             player.takeDamage(ProtectorConst.damage, from: dir)
-            projBody?.node?.removeFromParent()
+            pb?.node?.removeFromParent()
             return
         }
 
-        // 6. Enemy projectile ↔ Wall → remove projectile
+        // 6. Enemy projectile ↔ Wall → remove
         if (catA == PhysicsCategory.enemyProjectile && catB == PhysicsCategory.wall) ||
-           (catA == PhysicsCategory.wall && catB == PhysicsCategory.enemyProjectile) {
-            let projBody = body(for: PhysicsCategory.enemyProjectile)
-            projBody?.node?.removeFromParent()
+           (catA == PhysicsCategory.wall             && catB == PhysicsCategory.enemyProjectile) {
+            body(for: PhysicsCategory.enemyProjectile)?.node?.removeFromParent()
             return
         }
 
         // 7. Player ↔ Grapple zone → show prompt
-        if (catA == PhysicsCategory.player && catB == PhysicsCategory.grappleZone) ||
+        if (catA == PhysicsCategory.player     && catB == PhysicsCategory.grappleZone) ||
            (catA == PhysicsCategory.grappleZone && catB == PhysicsCategory.player) {
-            let zoneBody = body(for: PhysicsCategory.grappleZone)
-            if let grappleNode = zoneBody?.node?.parent as? GrapplePointNode {
+            let zb = body(for: PhysicsCategory.grappleZone)
+            if let grappleNode = zb?.node?.parent as? GrapplePointNode {
                 nearbyGrapplePoint = grappleNode
-                specialButton.showPrompt("Grapple!")
+                if player.activeCharacter == .wiz { specialButton.showPrompt("Grapple!") }
             }
             return
         }
 
         // 8. Player ↔ Key → collect
         if (catA == PhysicsCategory.player && catB == PhysicsCategory.key) ||
-           (catA == PhysicsCategory.key && catB == PhysicsCategory.player) {
-            let keyBody = body(for: PhysicsCategory.key)
-            if let keyNode = keyBody?.node as? KeyNode {
+           (catA == PhysicsCategory.key    && catB == PhysicsCategory.player) {
+            let kb = body(for: PhysicsCategory.key)
+            if let keyNode = kb?.node as? KeyNode {
                 keyNode.onCollected = { [weak self] in self?.hasKey = true }
                 keyNode.collect()
             }
@@ -497,9 +550,28 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
 
         // 9. Player ↔ Locked door → try unlock
         if (catA == PhysicsCategory.player && catB == PhysicsCategory.door) ||
-           (catA == PhysicsCategory.door && catB == PhysicsCategory.player) {
-            let doorBody = body(for: PhysicsCategory.door)
-            (doorBody?.node as? LockedDoorNode)?.tryUnlock(playerHasKey: hasKey)
+           (catA == PhysicsCategory.door   && catB == PhysicsCategory.player) {
+            let db = body(for: PhysicsCategory.door)
+            (db?.node as? LockedDoorNode)?.tryUnlock(playerHasKey: hasKey)
+            return
+        }
+
+        // 10. Player ↔ Snack bag → open
+        if (catA == PhysicsCategory.player   && catB == PhysicsCategory.snackBag) ||
+           (catA == PhysicsCategory.snackBag && catB == PhysicsCategory.player) {
+            let sb = body(for: PhysicsCategory.snackBag)
+            (sb?.node as? SnackBagNode)?.open()
+            return
+        }
+
+        // 11. Player ↔ Soft ground → set nearby dig spot (Bob only)
+        if (catA == PhysicsCategory.player     && catB == PhysicsCategory.softGround) ||
+           (catA == PhysicsCategory.softGround && catB == PhysicsCategory.player) {
+            let dgb = body(for: PhysicsCategory.softGround)
+            if let digNode = dgb?.node as? SoftGroundNode, !digNode.isDug {
+                nearbyDigSpot = digNode
+                updateSpecialButtonHint()
+            }
             return
         }
     }
@@ -508,11 +580,18 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         let catA = contact.bodyA.categoryBitMask
         let catB = contact.bodyB.categoryBitMask
 
-        // Clear grapple point when player leaves detection zone
-        if (catA == PhysicsCategory.player && catB == PhysicsCategory.grappleZone) ||
+        // Clear grapple point when player leaves zone
+        if (catA == PhysicsCategory.player     && catB == PhysicsCategory.grappleZone) ||
            (catA == PhysicsCategory.grappleZone && catB == PhysicsCategory.player) {
             nearbyGrapplePoint = nil
-            specialButton.hidePrompt()
+            if player.activeCharacter == .wiz { specialButton.hidePrompt() }
+        }
+
+        // Clear dig spot when player leaves
+        if (catA == PhysicsCategory.player     && catB == PhysicsCategory.softGround) ||
+           (catA == PhysicsCategory.softGround && catB == PhysicsCategory.player) {
+            nearbyDigSpot = nil
+            updateSpecialButtonHint()
         }
     }
 
@@ -526,11 +605,18 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         return nil
     }
 
-    // MARK: - Touch Forwarding
+    // MARK: - Touch Routing
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let loc = touch.location(in: cam)
+
+            // Portrait tap → switch character (checked before joystick routing)
+            if let hud = hud, hud.portraitBounds.contains(loc) {
+                switchNextCharacter()
+                continue
+            }
+
             if loc.x < 0 {
                 joystick.touchesBegan([touch], with: event)
             }
