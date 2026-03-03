@@ -8,12 +8,12 @@ class GameViewController: UIViewController {
 
         guard let skView = view as? SKView else { return }
 
-        // No anti-aliasing — we're doing 16-bit pixel art
         skView.ignoresSiblingOrder = true
         skView.showsFPS = true
         skView.showsNodeCount = true
 
-        let scene = SpawnBeachScene(size: view.bounds.size)
+        // Fixed design resolution — makes everything visually larger on iPad
+        let scene = SpawnBeachScene(size: CGSize(width: 960, height: 640))
         scene.scaleMode = .aspectFill
         skView.presentScene(scene)
     }

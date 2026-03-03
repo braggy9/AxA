@@ -28,10 +28,11 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
 
     // MARK: - Character State (passed between rooms)
 
-    var activeCharacter: CharacterType = .wiz
-    var unlockedCharacters: Set<CharacterType> = [.wiz]
-    var wizHealth: Int = PlayerCombatConst.maxHealth
-    var bobHealth: Int = BobConst.maxHealth
+    var activeCharacter: CharacterType = .babeee
+    var unlockedCharacters: Set<CharacterType> = [.babeee]
+    var babeeHealth: Int = BabeeConst.maxHealth
+    var bobHealth: Int   = BobConst.maxHealth
+    var wizHealth: Int   = PlayerCombatConst.maxHealth
 
     // Crystal counter (passed between rooms)
     var crystalCount: Int = 0 {
@@ -129,10 +130,20 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         // Restore character state from previous room
         player.activeCharacter    = activeCharacter
         player.unlockedCharacters = unlockedCharacters
-        player.wizHealth          = wizHealth
+        player.babeeHealth        = babeeHealth
         player.bobHealth          = bobHealth
-        player.maxHealth          = activeCharacter == .wiz ? PlayerCombatConst.maxHealth : BobConst.maxHealth
-        player.currentHealth      = activeCharacter == .wiz ? wizHealth : bobHealth
+        player.wizHealth          = wizHealth
+        switch activeCharacter {
+        case .babeee:
+            player.maxHealth     = BabeeConst.maxHealth
+            player.currentHealth = babeeHealth
+        case .bob:
+            player.maxHealth     = BobConst.maxHealth
+            player.currentHealth = bobHealth
+        case .wiz:
+            player.maxHealth     = PlayerCombatConst.maxHealth
+            player.currentHealth = wizHealth
+        }
 
         if let edge = playerStartEdge {
             player.position = entryPosition(for: edge)
@@ -238,6 +249,8 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
 
     private func updateSpecialButtonHint() {
         switch player.activeCharacter {
+        case .babeee:
+            specialButton.showPrompt("Rush!")
         case .wiz:
             if nearbyGrapplePoint != nil {
                 specialButton.showPrompt("Grapple!")
@@ -255,6 +268,8 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
 
     func useSpecial() {
         switch player.activeCharacter {
+        case .babeee:
+            player.performTinyRush()
         case .wiz:
             performGrapple()
         case .bob:
@@ -380,8 +395,10 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         isTransitioning = true
 
         // Snapshot current character state before leaving
-        let currentWizHP  = player.activeCharacter == .wiz ? player.currentHealth : player.wizHealth
-        let currentBobHP  = player.activeCharacter == .bob ? player.currentHealth : player.bobHealth
+        let act = player.activeCharacter
+        let currentBabeeHP = act == .babeee ? player.currentHealth : player.babeeHealth
+        let currentBobHP   = act == .bob    ? player.currentHealth : player.bobHealth
+        let currentWizHP   = act == .wiz    ? player.currentHealth : player.wizHealth
 
         let transition = SKTransition.fade(withDuration: RoomConst.transitionFadeDuration)
 
@@ -393,14 +410,15 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         case .saltCave:     destScene = SaltCaveScene(size: size)
         }
 
-        destScene.scaleMode         = scaleMode
-        destScene.playerStartEdge   = oppositeEdge(edge)
-        destScene.crystalCount      = crystalCount
-        destScene.hasKey            = hasKey
-        destScene.activeCharacter   = player.activeCharacter
+        destScene.scaleMode          = scaleMode
+        destScene.playerStartEdge    = oppositeEdge(edge)
+        destScene.crystalCount       = crystalCount
+        destScene.hasKey             = hasKey
+        destScene.activeCharacter    = player.activeCharacter
         destScene.unlockedCharacters = player.unlockedCharacters
-        destScene.wizHealth         = currentWizHP
-        destScene.bobHealth         = currentBobHP
+        destScene.babeeHealth        = currentBabeeHP
+        destScene.bobHealth          = currentBobHP
+        destScene.wizHealth          = currentWizHP
 
         view?.presentScene(destScene, transition: transition)
     }

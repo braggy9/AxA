@@ -19,7 +19,7 @@ final class CrystalNode: SKNode {
 
     override init() {
         sprite = SKSpriteNode(texture: CrystalNode.makeTexture(),
-                              size: CGSize(width: 8, height: 8))
+                              size: CGSize(width: 20, height: 20))
         super.init()
 
         addChild(sprite)
@@ -48,7 +48,7 @@ final class CrystalNode: SKNode {
     // MARK: Private — Physics
 
     private func setupPhysics() {
-        let body = SKPhysicsBody(circleOfRadius: 4)
+        let body = SKPhysicsBody(circleOfRadius: 10)
         body.isDynamic = false
         body.affectedByGravity = false
         body.categoryBitMask    = PhysicsCategory.crystal
@@ -60,9 +60,9 @@ final class CrystalNode: SKNode {
     // MARK: Private — Animation
 
     private func startFloatAnimation() {
-        let floatUp   = SKAction.moveBy(x: 0, y: 2, duration: 0.7)
+        let floatUp   = SKAction.moveBy(x: 0, y: 4, duration: 0.7)
         floatUp.timingMode = .easeInEaseOut
-        let floatDown = SKAction.moveBy(x: 0, y: -2, duration: 0.7)
+        let floatDown = SKAction.moveBy(x: 0, y: -4, duration: 0.7)
         floatDown.timingMode = .easeInEaseOut
         sprite.run(.repeatForever(.sequence([floatUp, floatDown])), withKey: "float")
     }
@@ -70,7 +70,7 @@ final class CrystalNode: SKNode {
     // MARK: Private — Texture Generation
 
     private static func makeTexture() -> SKTexture {
-        let size = CGSize(width: 8, height: 8)
+        let size = CGSize(width: 20, height: 20)
         let renderer = UIGraphicsImageRenderer(size: size)
         let img = renderer.image { ctx in
             let c = ctx.cgContext
@@ -78,23 +78,31 @@ final class CrystalNode: SKNode {
             // Diamond shape
             c.setFillColor(Palette.crystal.cgColor)
             let diamond = CGMutablePath()
-            diamond.move(to: CGPoint(x: 4, y: 7))
-            diamond.addLine(to: CGPoint(x: 1, y: 4))
-            diamond.addLine(to: CGPoint(x: 4, y: 1))
-            diamond.addLine(to: CGPoint(x: 7, y: 4))
+            diamond.move(to: CGPoint(x: 10, y: 19))
+            diamond.addLine(to: CGPoint(x: 1,  y: 10))
+            diamond.addLine(to: CGPoint(x: 10, y: 1))
+            diamond.addLine(to: CGPoint(x: 19, y: 10))
             diamond.closeSubpath()
             c.addPath(diamond)
             c.fillPath()
 
             // Sparkle outline
             c.setStrokeColor(UIColor(red: 1, green: 0.6, blue: 0.7, alpha: 0.9).cgColor)
-            c.setLineWidth(0.5)
+            c.setLineWidth(1)
             c.addPath(diamond)
+            c.strokePath()
+
+            // Inner facet lines
+            c.setStrokeColor(UIColor(white: 1, alpha: 0.3).cgColor)
+            c.setLineWidth(0.5)
+            c.move(to: CGPoint(x: 10, y: 19))
+            c.addLine(to: CGPoint(x: 10, y: 10))
+            c.addLine(to: CGPoint(x: 1, y: 10))
             c.strokePath()
 
             // Highlight dot
             c.setFillColor(UIColor(white: 1, alpha: 0.8).cgColor)
-            c.fillEllipse(in: CGRect(x: 3, y: 4, width: 1.5, height: 1.5))
+            c.fillEllipse(in: CGRect(x: 7, y: 11, width: 4, height: 4))
         }
         let tex = SKTexture(image: img)
         tex.filteringMode = .nearest

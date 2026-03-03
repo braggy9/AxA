@@ -70,7 +70,7 @@ final class SaltKnightNode: EnemyNode {
             let crystal = CrystalNode()
             // Scatter around death position
             let angle = CGFloat(i) / CGFloat(count) * .pi * 2
-            let radius: CGFloat = 10
+            let radius: CGFloat = 22
             crystal.position = CGPoint(
                 x: position.x + cos(angle) * radius,
                 y: position.y + sin(angle) * radius
@@ -101,34 +101,34 @@ final class SaltKnightNode: EnemyNode {
     // MARK: Private — Placeholder Sprite
 
     private static func buildPlaceholderSprite() -> SKSpriteNode {
-        let size = CGSize(width: 16, height: 16)
+        let size = CGSize(width: 28, height: 28)
         let renderer = UIGraphicsImageRenderer(size: size)
         let img = renderer.image { ctx in
             let c = ctx.cgContext
 
             // Body — pink rectangle (armoured axolotl)
             c.setFillColor(SKColor(red: 0.9, green: 0.5, blue: 0.7, alpha: 1).cgColor)
-            c.fill(CGRect(x: 2, y: 2, width: 12, height: 10))
+            c.fill(CGRect(x: 3, y: 3, width: 20, height: 18))
 
             // Armour highlight — lighter pink strip across chest
             c.setFillColor(SKColor(red: 1.0, green: 0.75, blue: 0.85, alpha: 0.8).cgColor)
-            c.fill(CGRect(x: 3, y: 5, width: 10, height: 3))
+            c.fill(CGRect(x: 5, y: 9, width: 16, height: 5))
 
             // Eyes — two white dots
             c.setFillColor(UIColor.white.cgColor)
-            c.fillEllipse(in: CGRect(x: 4, y: 9, width: 2, height: 2))
-            c.fillEllipse(in: CGRect(x: 10, y: 9, width: 2, height: 2))
+            c.fillEllipse(in: CGRect(x: 7, y: 16, width: 4, height: 4))
+            c.fillEllipse(in: CGRect(x: 17, y: 16, width: 4, height: 4))
 
             // Sword — gold vertical line (right side)
             c.setStrokeColor(SKColor(red: 0.9, green: 0.75, blue: 0.2, alpha: 1).cgColor)
-            c.setLineWidth(1.5)
-            c.move(to: CGPoint(x: 14, y: 1))
-            c.addLine(to: CGPoint(x: 14, y: 9))
+            c.setLineWidth(2.5)
+            c.move(to: CGPoint(x: 25, y: 2))
+            c.addLine(to: CGPoint(x: 25, y: 16))
             c.strokePath()
 
             // Sword crossguard
-            c.move(to: CGPoint(x: 12, y: 7))
-            c.addLine(to: CGPoint(x: 16, y: 7))
+            c.move(to: CGPoint(x: 21, y: 13))
+            c.addLine(to: CGPoint(x: 28, y: 13))
             c.strokePath()
         }
         let tex = SKTexture(image: img)

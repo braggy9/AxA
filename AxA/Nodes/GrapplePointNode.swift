@@ -18,11 +18,11 @@ final class GrapplePointNode: SKNode {
 
     // MARK: - Init
 
-    init(landingOffset: CGPoint = CGPoint(x: 24, y: 0)) {
+    init(landingOffset: CGPoint = CGPoint(x: 48, y: 0)) {
         self.landingOffset = landingOffset
 
         sprite = SKSpriteNode(texture: GrapplePointNode.makeTexture(),
-                              size: CGSize(width: 16, height: 16))
+                              size: CGSize(width: GrappleConst.postSize, height: GrappleConst.postSize))
         sprite.zPosition = ZPos.object
 
         detectionZone = SKNode()
@@ -59,27 +59,28 @@ final class GrapplePointNode: SKNode {
     // MARK: - Texture
 
     private static func makeTexture() -> SKTexture {
-        let size = CGSize(width: 16, height: 16)
+        let s = GrappleConst.postSize
+        let size = CGSize(width: s, height: s)
         let renderer = UIGraphicsImageRenderer(size: size)
         let img = renderer.image { ctx in
             let c = ctx.cgContext
 
             // Post — vertical wooden plank
             c.setFillColor(Palette.grapplePost.cgColor)
-            c.fill(CGRect(x: 6, y: 0, width: 4, height: 14))
+            c.fill(CGRect(x: s * 0.38, y: 0, width: s * 0.24, height: s * 0.82))
             // Post shading
             c.setFillColor(UIColor(white: 0, alpha: 0.2).cgColor)
-            c.fill(CGRect(x: 8, y: 0, width: 2, height: 14))
+            c.fill(CGRect(x: s * 0.52, y: 0, width: s * 0.10, height: s * 0.82))
 
             // Ring — brass circle at top
             c.setStrokeColor(Palette.grappleRing.cgColor)
-            c.setLineWidth(2)
-            c.strokeEllipse(in: CGRect(x: 4, y: 10, width: 8, height: 6))
+            c.setLineWidth(3)
+            c.strokeEllipse(in: CGRect(x: s * 0.22, y: s * 0.60, width: s * 0.56, height: s * 0.36))
 
             // Ring highlight
             c.setStrokeColor(UIColor(white: 1, alpha: 0.5).cgColor)
-            c.setLineWidth(0.5)
-            c.strokeEllipse(in: CGRect(x: 4.5, y: 11, width: 4, height: 3))
+            c.setLineWidth(1)
+            c.strokeEllipse(in: CGRect(x: s * 0.28, y: s * 0.64, width: s * 0.28, height: s * 0.20))
         }
         let tex = SKTexture(image: img)
         tex.filteringMode = .nearest

@@ -109,38 +109,38 @@ final class SaltProtectorNode: EnemyNode {
     // MARK: - Placeholder Sprite
 
     private static func buildPlaceholderSprite() -> SKSpriteNode {
-        let size = CGSize(width: 16, height: 16)
+        let size = CGSize(width: 28, height: 28)
         let renderer = UIGraphicsImageRenderer(size: size)
         let img = renderer.image { ctx in
             let c = ctx.cgContext
 
             // Body — teal armoured axolotl
             c.setFillColor(SKColor(red: 0.2, green: 0.6, blue: 0.7, alpha: 1).cgColor)
-            c.fillEllipse(in: CGRect(x: 2, y: 2, width: 10, height: 10))
+            c.fillEllipse(in: CGRect(x: 3, y: 3, width: 18, height: 18))
 
             // Heavy armour plate — silver
             c.setFillColor(SKColor(red: 0.7, green: 0.75, blue: 0.8, alpha: 1).cgColor)
-            c.fill(CGRect(x: 3, y: 4, width: 8, height: 5))
+            c.fill(CGRect(x: 5, y: 8, width: 14, height: 8))
 
             // Shield (right side)
             c.setFillColor(SKColor(red: 0.6, green: 0.65, blue: 0.7, alpha: 1).cgColor)
             let shieldPath = CGMutablePath()
-            shieldPath.move(to: CGPoint(x: 12, y: 12))
-            shieldPath.addLine(to: CGPoint(x: 16, y: 10))
-            shieldPath.addLine(to: CGPoint(x: 16, y: 3))
-            shieldPath.addLine(to: CGPoint(x: 12, y: 1))
+            shieldPath.move(to: CGPoint(x: 21, y: 22))
+            shieldPath.addLine(to: CGPoint(x: 28, y: 19))
+            shieldPath.addLine(to: CGPoint(x: 28, y: 6))
+            shieldPath.addLine(to: CGPoint(x: 21, y: 3))
             shieldPath.closeSubpath()
             c.addPath(shieldPath)
             c.fillPath()
             c.setStrokeColor(UIColor.white.withAlphaComponent(0.4).cgColor)
-            c.setLineWidth(0.5)
+            c.setLineWidth(1)
             c.addPath(shieldPath)
             c.strokePath()
 
             // Eyes
             c.setFillColor(UIColor.white.cgColor)
-            c.fillEllipse(in: CGRect(x: 4, y: 8, width: 2, height: 2))
-            c.fillEllipse(in: CGRect(x: 8, y: 8, width: 2, height: 2))
+            c.fillEllipse(in: CGRect(x: 7, y: 14, width: 4, height: 4))
+            c.fillEllipse(in: CGRect(x: 14, y: 14, width: 4, height: 4))
         }
         let tex = SKTexture(image: img)
         tex.filteringMode = .nearest

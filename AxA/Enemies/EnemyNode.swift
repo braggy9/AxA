@@ -65,7 +65,7 @@ class EnemyNode: SKNode {
     // MARK: Physics (base setup — subclasses can customise after super.init)
 
     private func setupBasePhysics() {
-        let body = SKPhysicsBody(circleOfRadius: 6)
+        let body = SKPhysicsBody(circleOfRadius: 12)
         body.categoryBitMask    = PhysicsCategory.enemy
         body.collisionBitMask   = PhysicsCategory.wall | PhysicsCategory.player
         body.contactTestBitMask = PhysicsCategory.player | PhysicsCategory.projectile

@@ -26,7 +26,7 @@ enum FacingDirection {
 }
 
 // MARK: - PlayerNode
-// Represents the active playable character (Wiz or Bob).
+// Represents the active playable character (Babeee, Bob, or Wiz).
 // Character switching swaps visible sprites and adjusts stats.
 // Each character retains its own health across switches and room transitions.
 
@@ -34,29 +34,37 @@ final class PlayerNode: SKNode {
 
     // MARK: - Character State
 
-    var activeCharacter: CharacterType = .wiz {
+    var activeCharacter: CharacterType = .babeee {
         didSet { updateCharacterVisuals() }
     }
-    var unlockedCharacters: Set<CharacterType> = [.wiz]
+    var unlockedCharacters: Set<CharacterType> = [.babeee]
 
     /// Per-character health — persists across switches and room transitions.
-    var wizHealth: Int = PlayerCombatConst.maxHealth
-    var bobHealth: Int = BobConst.maxHealth
+    var babeeHealth: Int = BabeeConst.maxHealth
+    var bobHealth: Int   = BobConst.maxHealth
+    var wizHealth: Int   = PlayerCombatConst.maxHealth
 
     // MARK: - Movement State
 
     private(set) var facing: FacingDirection = .down
 
-    private let wizSprite: SKSpriteNode
-    private let bobSprite: SKSpriteNode
+    private let babeeSprite: SKSpriteNode
+    private let bobSprite:   SKSpriteNode
+    private let wizSprite:   SKSpriteNode
 
     /// The currently active sprite — always matches activeCharacter.
-    var sprite: SKSpriteNode { activeCharacter == .wiz ? wizSprite : bobSprite }
+    var sprite: SKSpriteNode {
+        switch activeCharacter {
+        case .babeee: return babeeSprite
+        case .bob:    return bobSprite
+        case .wiz:    return wizSprite
+        }
+    }
 
     // MARK: - Combat State
 
-    var maxHealth: Int = PlayerCombatConst.maxHealth
-    var currentHealth: Int = PlayerCombatConst.maxHealth
+    var maxHealth: Int     = BabeeConst.maxHealth
+    var currentHealth: Int = BabeeConst.maxHealth
 
     private(set) var isInvincible: Bool = false
 
@@ -64,6 +72,7 @@ final class PlayerNode: SKNode {
     private var attackHitbox: SKSpriteNode?
 
     private var isFlutterDashing: Bool = false
+    private var isRushing: Bool = false
 
     /// Called whenever health changes. Args: (current, max)
     var onHealthChanged: ((Int, Int) -> Void)?
@@ -74,14 +83,17 @@ final class PlayerNode: SKNode {
     // MARK: - Init
 
     override init() {
-        wizSprite = PlayerNode.buildWizSprite()
-        bobSprite = PlayerNode.buildBobSprite()
+        babeeSprite = PlayerNode.buildBabeeSprite()
+        bobSprite   = PlayerNode.buildBobSprite()
+        wizSprite   = PlayerNode.buildWizSprite()
 
         super.init()
 
-        addChild(wizSprite)
-        bobSprite.isHidden = true
+        addChild(babeeSprite)
+        bobSprite.isHidden   = true
+        wizSprite.isHidden   = true
         addChild(bobSprite)
+        addChild(wizSprite)
 
         setupPhysics()
         zPosition = ZPos.player
@@ -94,8 +106,9 @@ final class PlayerNode: SKNode {
     func unlock(_ character: CharacterType) {
         unlockedCharacters.insert(character)
         switch character {
-        case .bob: bobHealth = BobConst.maxHealth
-        case .wiz: break
+        case .babeee: babeeHealth = BabeeConst.maxHealth
+        case .bob:    bobHealth   = BobConst.maxHealth
+        case .wiz:    wizHealth   = PlayerCombatConst.maxHealth
         }
     }
 
@@ -104,20 +117,24 @@ final class PlayerNode: SKNode {
 
         // Save outgoing health
         switch activeCharacter {
-        case .wiz: wizHealth = currentHealth
-        case .bob: bobHealth = currentHealth
+        case .babeee: babeeHealth = currentHealth
+        case .bob:    bobHealth   = currentHealth
+        case .wiz:    wizHealth   = currentHealth
         }
 
         activeCharacter = character   // triggers updateCharacterVisuals()
 
         // Restore incoming health
         switch character {
-        case .wiz:
-            maxHealth     = PlayerCombatConst.maxHealth
-            currentHealth = wizHealth
+        case .babeee:
+            maxHealth     = BabeeConst.maxHealth
+            currentHealth = babeeHealth
         case .bob:
             maxHealth     = BobConst.maxHealth
             currentHealth = bobHealth
+        case .wiz:
+            maxHealth     = PlayerCombatConst.maxHealth
+            currentHealth = wizHealth
         }
 
         onHealthChanged?(currentHealth, maxHealth)
@@ -155,24 +172,26 @@ final class PlayerNode: SKNode {
     /// Triggered by the A button. Delegates to the active character's attack.
     func performAttack() {
         switch activeCharacter {
-        case .wiz: performStaffSwing()
-        case .bob: performPeck()
+        case .babeee: performTailSlap()
+        case .bob:    performPeck()
+        case .wiz:    performStaffSwing()
         }
     }
 
-    // Wiz staff swing — medium range, 0.5s cooldown
-    private func performStaffSwing() {
+    // Babeee tail slap — very short range, 0.45s cooldown
+    private func performTailSlap() {
         guard attackCooldownRemaining <= 0 else { return }
-        attackCooldownRemaining = PlayerCombatConst.attackCooldown
+        attackCooldownRemaining = BabeeConst.tailSlapCooldown
 
-        fireHitbox(size: PlayerCombatConst.attackHitboxSize,
-                   offset: PlayerCombatConst.attackHitboxOffset)
+        fireHitbox(size: BabeeConst.tailSlapHitboxSize,
+                   offset: BabeeConst.tailSlapHitboxOffset)
 
-        let swingOut  = SKAction.move(by: CGVector(dx: facing.unitVector.dx * 4,
-                                                    dy: facing.unitVector.dy * 4), duration: 0.08)
-        let swingBack = SKAction.move(by: CGVector(dx: facing.unitVector.dx * -4,
-                                                    dy: facing.unitVector.dy * -4), duration: 0.08)
-        sprite.run(.sequence([swingOut, swingBack]), withKey: "swing")
+        // Tiny rear-swing animation
+        let slapOut  = SKAction.move(by: CGVector(dx: facing.unitVector.dx * 3,
+                                                   dy: facing.unitVector.dy * 3), duration: 0.07)
+        let slapBack = SKAction.move(by: CGVector(dx: facing.unitVector.dx * -3,
+                                                   dy: facing.unitVector.dy * -3), duration: 0.07)
+        sprite.run(.sequence([slapOut, slapBack]), withKey: "tailslap")
     }
 
     // Bob peck — short range, 0.3s cooldown
@@ -188,6 +207,21 @@ final class PlayerNode: SKNode {
         let back = SKAction.move(by: CGVector(dx: facing.unitVector.dx * -5,
                                                dy: facing.unitVector.dy * -5), duration: 0.06)
         sprite.run(.sequence([jab, back]), withKey: "peck")
+    }
+
+    // Wiz staff swing — medium range, 0.5s cooldown
+    private func performStaffSwing() {
+        guard attackCooldownRemaining <= 0 else { return }
+        attackCooldownRemaining = PlayerCombatConst.attackCooldown
+
+        fireHitbox(size: PlayerCombatConst.attackHitboxSize,
+                   offset: PlayerCombatConst.attackHitboxOffset)
+
+        let swingOut  = SKAction.move(by: CGVector(dx: facing.unitVector.dx * 4,
+                                                    dy: facing.unitVector.dy * 4), duration: 0.08)
+        let swingBack = SKAction.move(by: CGVector(dx: facing.unitVector.dx * -4,
+                                                    dy: facing.unitVector.dy * -4), duration: 0.08)
+        sprite.run(.sequence([swingOut, swingBack]), withKey: "swing")
     }
 
     private func fireHitbox(size: CGSize, offset: CGFloat) {
@@ -218,6 +252,48 @@ final class PlayerNode: SKNode {
             hitbox?.alpha = 0
         }
         hitbox.run(.sequence([wait, disable]), withKey: "hitboxLifetime")
+    }
+
+    // MARK: - Babeee Special — Tiny Rush
+
+    func performTinyRush() {
+        guard !isRushing else { return }
+        isRushing = true
+
+        // Brief invincibility during rush
+        isInvincible = true
+
+        physicsBody?.isDynamic = false
+
+        let dashVec = CGVector(dx: facing.unitVector.dx * BabeeConst.rushDistance,
+                               dy: facing.unitVector.dy * BabeeConst.rushDistance)
+        let dash = SKAction.moveBy(x: dashVec.dx, y: dashVec.dy,
+                                   duration: BabeeConst.rushDuration)
+        dash.timingMode = .easeOut
+
+        // Squish + stretch visual
+        let squish   = SKAction.scale(to: CGSize(width: 1.3, height: 0.75), duration: 0.05)
+        let stretch  = SKAction.scale(to: CGSize(width: 0.8, height: 1.2), duration: 0.05)
+        let restore  = SKAction.scale(to: CGSize(width: 1.0, height: 1.0), duration: 0.1)
+        sprite.run(.sequence([squish, stretch, restore]), withKey: "rush")
+
+        // Brief glow
+        let glow    = SKAction.colorize(with: Palette.babeeAccent, colorBlendFactor: 0.7, duration: 0.05)
+        let unglow  = SKAction.colorize(withColorBlendFactor: 0, duration: 0.2)
+        sprite.run(.sequence([glow, unglow]))
+
+        run(.sequence([
+            dash,
+            .run { [weak self] in
+                self?.physicsBody?.isDynamic = true
+                self?.isRushing = false
+            },
+            .wait(forDuration: BabeeConst.rushInvincibilityDuration - BabeeConst.rushDuration),
+            .run { [weak self] in
+                self?.isInvincible = false
+                self?.sprite.colorBlendFactor = 0
+            }
+        ]), withKey: "tinyRush")
     }
 
     // MARK: - Bob Special — Flutter Dash
@@ -327,10 +403,10 @@ final class PlayerNode: SKNode {
     // MARK: - Character Visuals
 
     private func updateCharacterVisuals() {
-        wizSprite.isHidden = (activeCharacter != .wiz)
-        bobSprite.isHidden = (activeCharacter != .bob)
-        // Stop any walk animation on the outgoing sprite (direction/state carried forward)
-        for s in [wizSprite, bobSprite] {
+        babeeSprite.isHidden = (activeCharacter != .babeee)
+        bobSprite.isHidden   = (activeCharacter != .bob)
+        wizSprite.isHidden   = (activeCharacter != .wiz)
+        for s in [babeeSprite, bobSprite, wizSprite] {
             s.removeAction(forKey: "walk")
             s.position = .zero
         }
@@ -399,37 +475,53 @@ final class PlayerNode: SKNode {
 
     // MARK: - Placeholder Sprites
 
-    private static func buildWizSprite() -> SKSpriteNode {
+    private static func buildBabeeSprite() -> SKSpriteNode {
         let size = PlayerConst.size
         let renderer = UIGraphicsImageRenderer(size: size)
         let img = renderer.image { ctx in
             let c = ctx.cgContext
+            let w = size.width, h = size.height
 
-            // Body — purple oval
-            c.setFillColor(Palette.wizBody.cgColor)
-            c.fillEllipse(in: CGRect(x: 2, y: 2, width: 12, height: 10))
+            // Chubby round baby axolotl body — pale pink oval
+            c.setFillColor(Palette.babeeBody.cgColor)
+            c.fillEllipse(in: CGRect(x: 2, y: 2, width: w - 4, height: h - 6))
 
-            // Hat — dark purple triangle on top
-            c.setFillColor(Palette.wizHat.cgColor)
-            let hat = CGMutablePath()
-            hat.move(to:    CGPoint(x: 8,  y: 16))
-            hat.addLine(to: CGPoint(x: 4,  y: 8))
-            hat.addLine(to: CGPoint(x: 12, y: 8))
-            hat.closeSubpath()
-            c.addPath(hat)
-            c.fillPath()
+            // Head — big round circle (disproportionately large, baby-style)
+            c.setFillColor(Palette.babeeBody.cgColor)
+            c.fillEllipse(in: CGRect(x: 3, y: h * 0.45, width: w - 6, height: h * 0.55))
 
-            // Staff — gold line from tail (bottom right)
-            c.setStrokeColor(Palette.wizStaff.cgColor)
+            // Tiny gill fronds on top of head (axolotl feature) — 3 small bumps
+            c.setFillColor(Palette.babeeAccent.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.18, y: h * 0.85, width: w * 0.14, height: h * 0.16))
+            c.fillEllipse(in: CGRect(x: w * 0.42, y: h * 0.9,  width: w * 0.14, height: h * 0.18))
+            c.fillEllipse(in: CGRect(x: w * 0.66, y: h * 0.85, width: w * 0.14, height: h * 0.16))
+
+            // Big round eyes — white with large pupils (baby face)
+            c.setFillColor(UIColor.white.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.22, y: h * 0.60, width: w * 0.22, height: w * 0.22))
+            c.fillEllipse(in: CGRect(x: w * 0.56, y: h * 0.60, width: w * 0.22, height: w * 0.22))
+
+            // Pupils — large black dots
+            c.setFillColor(UIColor.black.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.28, y: h * 0.64, width: w * 0.12, height: w * 0.12))
+            c.fillEllipse(in: CGRect(x: w * 0.62, y: h * 0.64, width: w * 0.12, height: w * 0.12))
+
+            // Eye shine — tiny white dot
+            c.setFillColor(UIColor.white.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.30, y: h * 0.68, width: w * 0.05, height: w * 0.05))
+            c.fillEllipse(in: CGRect(x: w * 0.64, y: h * 0.68, width: w * 0.05, height: w * 0.05))
+
+            // Tiny smile — U-shaped arc
+            c.setStrokeColor(UIColor(red: 0.7, green: 0.3, blue: 0.4, alpha: 1).cgColor)
             c.setLineWidth(1.5)
-            c.move(to:    CGPoint(x: 12, y: 2))
-            c.addLine(to: CGPoint(x: 15, y: 6))
+            c.move(to:     CGPoint(x: w * 0.36, y: h * 0.50))
+            c.addQuadCurve(to: CGPoint(x: w * 0.64, y: h * 0.50),
+                           control: CGPoint(x: w * 0.50, y: h * 0.42))
             c.strokePath()
 
-            // Eyes — two white dots
-            c.setFillColor(UIColor.white.cgColor)
-            c.fillEllipse(in: CGRect(x: 5, y: 6, width: 2, height: 2))
-            c.fillEllipse(in: CGRect(x: 9, y: 6, width: 2, height: 2))
+            // Tiny stubby tail — darker pink squiggle at bottom right
+            c.setFillColor(Palette.babeeAccent.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.72, y: h * 0.15, width: w * 0.20, height: h * 0.14))
         }
         let tex = SKTexture(image: img)
         tex.filteringMode = .nearest
@@ -480,6 +572,43 @@ final class PlayerNode: SKNode {
             wing.closeSubpath()
             c.addPath(wing)
             c.fillPath()
+        }
+        let tex = SKTexture(image: img)
+        tex.filteringMode = .nearest
+        return SKSpriteNode(texture: tex, size: size)
+    }
+
+    private static func buildWizSprite() -> SKSpriteNode {
+        let size = PlayerConst.size
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let img = renderer.image { ctx in
+            let c = ctx.cgContext
+
+            // Body — purple oval
+            c.setFillColor(Palette.wizBody.cgColor)
+            c.fillEllipse(in: CGRect(x: 2, y: 2, width: 12, height: 10))
+
+            // Hat — dark purple triangle on top
+            c.setFillColor(Palette.wizHat.cgColor)
+            let hat = CGMutablePath()
+            hat.move(to:    CGPoint(x: 8,  y: 16))
+            hat.addLine(to: CGPoint(x: 4,  y: 8))
+            hat.addLine(to: CGPoint(x: 12, y: 8))
+            hat.closeSubpath()
+            c.addPath(hat)
+            c.fillPath()
+
+            // Staff — gold line from tail (bottom right)
+            c.setStrokeColor(Palette.wizStaff.cgColor)
+            c.setLineWidth(1.5)
+            c.move(to:    CGPoint(x: 12, y: 2))
+            c.addLine(to: CGPoint(x: 15, y: 6))
+            c.strokePath()
+
+            // Eyes — two white dots
+            c.setFillColor(UIColor.white.cgColor)
+            c.fillEllipse(in: CGRect(x: 5, y: 6, width: 2, height: 2))
+            c.fillEllipse(in: CGRect(x: 9, y: 6, width: 2, height: 2))
         }
         let tex = SKTexture(image: img)
         tex.filteringMode = .nearest

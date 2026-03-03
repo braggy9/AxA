@@ -65,7 +65,7 @@ final class HUDNode: SKNode {
         portraitFrame.position = CGPoint(x: HUDConst.portraitX, y: HUDConst.portraitY)
 
         // --- Portrait icon (placeholder — same size as design, swapped per character) ---
-        portraitIcon = SKSpriteNode(texture: HUDNode.makeWizPortraitTexture(),
+        portraitIcon = SKSpriteNode(texture: HUDNode.makeBabeePortraitTexture(),
                                     size: CGSize(width: HUDConst.portraitSize,
                                                  height: HUDConst.portraitSize))
 
@@ -141,8 +141,9 @@ final class HUDNode: SKNode {
     func setCharacter(_ character: CharacterType) {
         let tex: SKTexture
         switch character {
-        case .wiz: tex = HUDNode.makeWizPortraitTexture()
-        case .bob: tex = HUDNode.makeBobPortraitTexture()
+        case .babeee: tex = HUDNode.makeBabeePortraitTexture()
+        case .wiz:    tex = HUDNode.makeWizPortraitTexture()
+        case .bob:    tex = HUDNode.makeBobPortraitTexture()
         }
         portraitIcon.texture = tex
 
@@ -174,6 +175,42 @@ final class HUDNode: SKNode {
             c.setLineWidth(0.5)
             c.addPath(diamond)
             c.strokePath()
+        }
+        let tex = SKTexture(image: img)
+        tex.filteringMode = .nearest
+        return tex
+    }
+
+    private static func makeBabeePortraitTexture() -> SKTexture {
+        let s = HUDConst.portraitSize
+        let size = CGSize(width: s, height: s)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let img = renderer.image { ctx in
+            let c = ctx.cgContext
+            let w = size.width, h = size.height
+
+            // Chubby round body — pale pink
+            c.setFillColor(Palette.babeeBody.cgColor)
+            c.fillEllipse(in: CGRect(x: 2, y: 1, width: w - 4, height: h - 5))
+
+            // Big round head
+            c.fillEllipse(in: CGRect(x: 3, y: h * 0.45, width: w - 6, height: h * 0.55))
+
+            // Tiny gill fronds — 3 pink bumps on top
+            c.setFillColor(Palette.babeeAccent.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.18, y: h * 0.86, width: w * 0.15, height: w * 0.15))
+            c.fillEllipse(in: CGRect(x: w * 0.42, y: h * 0.90, width: w * 0.15, height: w * 0.15))
+            c.fillEllipse(in: CGRect(x: w * 0.65, y: h * 0.86, width: w * 0.15, height: w * 0.15))
+
+            // Big eyes — white
+            c.setFillColor(UIColor.white.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.18, y: h * 0.58, width: w * 0.24, height: h * 0.22))
+            c.fillEllipse(in: CGRect(x: w * 0.56, y: h * 0.58, width: w * 0.24, height: h * 0.22))
+
+            // Pupils
+            c.setFillColor(UIColor.black.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.25, y: h * 0.62, width: w * 0.12, height: w * 0.12))
+            c.fillEllipse(in: CGRect(x: w * 0.63, y: h * 0.62, width: w * 0.12, height: w * 0.12))
         }
         let tex = SKTexture(image: img)
         tex.filteringMode = .nearest

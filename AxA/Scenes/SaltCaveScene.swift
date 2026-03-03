@@ -1,6 +1,6 @@
 // SaltCaveScene.swift
 // AxA — World 1, Room 4: Salt Cave
-// Tight cave corridors. Two Salt Protectors guard this room.
+// Winding cave corridors. Two Salt Protectors guard this room.
 // Breakable salt crystal walls hide the golden key.
 // Locked door blocks the snack bag that unlocks Bob the Chicken.
 // Dig spots for Bob hidden around the cave.
@@ -23,14 +23,15 @@ final class SaltCaveScene: BaseGameScene {
         addChild(groundMap)
         for wallNode in result.walls { addChild(wallNode) }
 
-        playerStartPosition = groundMap.centerOfTile(atColumn: 2, row: 7)
+        // Player enters from left — start in left corridor
+        playerStartPosition = groundMap.centerOfTile(atColumn: 3, row: 13)
 
         roomTransitions = [.left: .lakeShoreEast]
 
         // Two Salt Protectors in the main corridor
         enemySpawns = [
-            (type: .saltProtector, col: 8,  row: 7),
-            (type: .saltProtector, col: 14, row: 3),
+            (type: .saltProtector, col: 14, row: 13),
+            (type: .saltProtector, col: 24, row: 22),
         ]
 
         addBreakableWalls()
@@ -38,22 +39,31 @@ final class SaltCaveScene: BaseGameScene {
         addDigSpots()
     }
 
+    // MARK: - Breakable walls (cols 21-23, row 3-5 area — blocks key access)
+
     private func addBreakableWalls() {
-        let breakableCols = [13, 14, 15]
-        for col in breakableCols {
+        // 3×3 cluster of breakable walls blocking the key alcove
+        let positions: [(col: Int, row: Int)] = [
+            (21, 3), (22, 3), (23, 3),
+            (21, 4), (22, 4), (23, 4),
+            (21, 5), (22, 5), (23, 5),
+        ]
+        for p in positions {
             let wall = BreakableWallNode()
-            wall.position = groundMap.centerOfTile(atColumn: col, row: 1)
+            wall.position = groundMap.centerOfTile(atColumn: p.col, row: p.row)
             addChild(wall)
         }
     }
 
     private func addKeyAndDoor() {
+        // Key is deep in the lower corridor (past breakable walls)
         let key = KeyNode()
-        key.position = groundMap.centerOfTile(atColumn: 17, row: 2)
+        key.position = groundMap.centerOfTile(atColumn: 29, row: 5)
         addChild(key)
 
+        // Door blocks the snack bag at the far end of the upper corridor
         let door = LockedDoorNode()
-        door.position = groundMap.centerOfTile(atColumn: 14, row: 9)
+        door.position = groundMap.centerOfTile(atColumn: 8, row: 22)
         door.onUnlocked = { [weak self] in
             self?.placeSnackBag()
         }
@@ -63,19 +73,17 @@ final class SaltCaveScene: BaseGameScene {
     /// Called when the locked door opens — Bob's snack bag appears behind it.
     private func placeSnackBag() {
         let bag = SnackBagNode()
-        bag.position = groundMap.centerOfTile(atColumn: 14, row: 10)
+        bag.position = groundMap.centerOfTile(atColumn: 15, row: 23)
         addChild(bag)
 
-        // Opening the bag unlocks Bob and switches to him
         bag.onOpened = { [weak self] in
             self?.playerUnlockedCharacter(.bob)
             self?.playCelebration()
         }
     }
 
-    /// Brief celebration effect when Bob is unlocked.
+    /// Brief celebration effect when a character is unlocked.
     private func playCelebration() {
-        // Screen flash
         let flash = SKSpriteNode(color: Palette.celebSparkle,
                                  size: CGSize(width: size.width * 2, height: size.height * 2))
         flash.position  = .zero
@@ -93,10 +101,10 @@ final class SaltCaveScene: BaseGameScene {
     // MARK: - Dig Spots (Bob-only secrets)
 
     private func addDigSpots() {
-        // Two hidden dig spots around the cave — each yields 3 crystals
+        // Two hidden dig spots — each yields 3 crystals
         let spotData: [(col: Int, row: Int)] = [
-            (3,  2),    // lower-left corner nook
-            (17, 8),    // far-right passage near the door area
+            (3,  5),    // lower-left corridor nook
+            (27, 4),    // lower-right near key area
         ]
         for data in spotData {
             let spot = SoftGroundNode()
