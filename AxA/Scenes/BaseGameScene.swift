@@ -40,12 +40,23 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
     private(set) var cam: SKCameraNode!
     private var hud: HUDNode!
 
-    private var enemies: [SaltKnightNode] = []
+    private var saltKnights:    [SaltKnightNode]    = []
+    private var saltProtectors: [SaltProtectorNode] = []
 
     // Crystal counter
     private var crystalCount: Int = 0 {
         didSet { hud.setCrystals(crystalCount) }
     }
+
+    // Key state (passed between rooms)
+    var hasKey: Bool = false
+
+    // Grapple — set when player enters a grapple point's detection zone
+    private var nearbyGrapplePoint: GrapplePointNode?
+    private var isGrappling: Bool = false
+
+    // Special button
+    private var specialButton: SpecialButtonNode!
 
     // Transition guard — prevent firing twice
     private var isTransitioning: Bool = false
@@ -160,6 +171,10 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         attackButton.onTap = { [weak self] in self?.player.performAttack() }
         cam.addChild(attackButton)
 
+        specialButton = SpecialButtonNode()
+        specialButton.onTap = { [weak self] in self?.useSpecial() }
+        cam.addChild(specialButton)
+
         layoutHUD()
         hud.setHealth(player.currentHealth, max: player.maxHealth)
         hud.setCrystals(crystalCount)
@@ -172,6 +187,10 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
             x:  halfW - ButtonConst.xOffsetFromRight,
             y: -halfH + ButtonConst.yOffsetFromBottom
         )
+        specialButton.position = CGPoint(
+            x:  halfW - SpecialButtonConst.xOffsetFromRight,
+            y: -halfH + SpecialButtonConst.yOffsetFromBottom
+        )
     }
 
     // MARK: - Enemies
@@ -179,22 +198,73 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
     private func setupEnemies() {
         guard let map = groundMap else { return }
         for spawn in enemySpawns {
+            let spawnPos = map.centerOfTile(atColumn: spawn.col, row: spawn.row)
             switch spawn.type {
             case .saltKnight:
                 let knight = SaltKnightNode()
-                knight.position = map.centerOfTile(atColumn: spawn.col, row: spawn.row)
+                knight.position = spawnPos
                 knight.playerRef = player
-
-                // Patrol between a point left and right of spawn
                 let patrolOffset: CGFloat = World.tileSize * 3
-                knight.patrolStart = CGPoint(x: knight.position.x - patrolOffset,
-                                             y: knight.position.y)
-                knight.patrolEnd   = CGPoint(x: knight.position.x + patrolOffset,
-                                             y: knight.position.y)
+                knight.patrolStart = CGPoint(x: spawnPos.x - patrolOffset, y: spawnPos.y)
+                knight.patrolEnd   = CGPoint(x: spawnPos.x + patrolOffset, y: spawnPos.y)
                 addChild(knight)
-                enemies.append(knight)
+                saltKnights.append(knight)
+
+            case .saltProtector:
+                let protector = SaltProtectorNode()
+                protector.position = spawnPos
+                protector.playerRef = player
+                protector.onFireProjectile = { [weak self, weak protector] velocity in
+                    guard let self = self, let protector = protector else { return }
+                    let proj = EnemyProjectileNode()
+                    proj.position = protector.position
+                    self.addChild(proj)
+                    proj.launch(velocity: velocity)
+                }
+                addChild(protector)
+                saltProtectors.append(protector)
             }
         }
+    }
+
+    // MARK: - Grapple Hook
+
+    func useSpecial() {
+        guard let grapplePoint = nearbyGrapplePoint, !isGrappling else { return }
+        isGrappling = true
+
+        let targetPos = CGPoint(
+            x: grapplePoint.position.x + grapplePoint.landingOffset.x,
+            y: grapplePoint.position.y + grapplePoint.landingOffset.y
+        )
+
+        // Draw rope
+        let rope = SKShapeNode()
+        let ropePath = CGMutablePath()
+        ropePath.move(to: player.position)
+        ropePath.addLine(to: grapplePoint.position)
+        rope.path = ropePath
+        rope.strokeColor = Palette.ropeColour
+        rope.lineWidth = 1.5
+        rope.zPosition = ZPos.player - 1
+        addChild(rope)
+
+        // Zip player across
+        player.physicsBody?.velocity = .zero
+        player.physicsBody?.isDynamic = false
+
+        let zipAction = SKAction.sequence([
+            SKAction.wait(forDuration: GrappleConst.ropeDrawDuration),
+            SKAction.move(to: targetPos, duration: GrappleConst.zipDuration),
+            SKAction.run { [weak self] in
+                self?.player.physicsBody?.isDynamic = true
+                self?.isGrappling = false
+                self?.nearbyGrapplePoint = nil
+                self?.specialButton.hidePrompt()
+                rope.removeFromParent()
+            }
+        ])
+        player.run(zipAction, withKey: "grapple")
     }
 
     // MARK: - Room Transitions
@@ -247,14 +317,16 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
             destScene = SpawnBeachScene(size: size)
         case .crystalFields:
             destScene = CrystalFieldsScene(size: size)
+        case .lakeShoreEast:
+            destScene = LakeShoreEastScene(size: size)
+        case .saltCave:
+            destScene = SaltCaveScene(size: size)
         }
 
         destScene.scaleMode = scaleMode
-        // Player enters from opposite edge in destination
         destScene.playerStartEdge = oppositeEdge(edge)
-
-        // Pass crystal count across rooms
         destScene.crystalCount = crystalCount
+        destScene.hasKey = hasKey
 
         view?.presentScene(destScene, transition: transition)
     }
@@ -280,8 +352,11 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
             player.move(direction: .zero, delta: dt)
         }
 
-        for enemy in enemies {
-            enemy.update(deltaTime: dt)
+        for knight in saltKnights {
+            knight.update(deltaTime: dt)
+        }
+        for protector in saltProtectors {
+            protector.update(deltaTime: dt)
         }
 
         updateCamera()
@@ -326,41 +401,118 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
 
-        // 3. Attack hitbox ↔ Enemy → enemy takes damage
+        // 3. Attack hitbox ↔ Enemy → enemy takes damage (with shield check for protectors)
         if (catA == PhysicsCategory.projectile && catB == PhysicsCategory.enemy) ||
            (catA == PhysicsCategory.enemy && catB == PhysicsCategory.projectile) {
             let enemyBody = body(for: PhysicsCategory.enemy)
             if let enemyNode = enemyBody?.node as? EnemyNode {
-                // Determine knockback direction: away from player
                 let dir = CGVector(
                     dx: enemyNode.position.x - player.position.x,
                     dy: enemyNode.position.y - player.position.y
                 )
-                enemyNode.takeDamage(PlayerCombatConst.attackDamage)
-                enemyNode.knockback(from: dir)
+                // Shield check for protectors
+                if let protector = enemyNode as? SaltProtectorNode,
+                   protector.isShielding(attackDirection: dir) {
+                    // Attack blocked — shield spark
+                    let spark = SKAction.sequence([
+                        SKAction.colorize(with: .white, colorBlendFactor: 0.8, duration: 0.05),
+                        SKAction.colorize(withColorBlendFactor: 0, duration: 0.05)
+                    ])
+                    protector.sprite.run(spark)
+                } else {
+                    enemyNode.takeDamage(PlayerCombatConst.attackDamage)
+                    enemyNode.knockback(from: dir)
+                }
             }
+            return
+        }
+
+        // 3b. Attack hitbox ↔ Breakable wall → shatter
+        if (catA == PhysicsCategory.projectile && catB == PhysicsCategory.breakableWall) ||
+           (catA == PhysicsCategory.breakableWall && catB == PhysicsCategory.projectile) {
+            let wallBody = body(for: PhysicsCategory.breakableWall)
+            (wallBody?.node as? BreakableWallNode)?.takeDamage()
             return
         }
 
         // 4. Enemy body ↔ Player body → player takes damage
         if (catA == PhysicsCategory.enemy && catB == PhysicsCategory.player) ||
            (catA == PhysicsCategory.player && catB == PhysicsCategory.enemy) {
-            let enemyBody  = body(for: PhysicsCategory.enemy)
-            let playerBody = body(for: PhysicsCategory.player)
-
-            if let enemyNode = enemyBody?.node as? SaltKnightNode,
-               let _ = playerBody?.node as? PlayerNode {
-                // Only deal damage if not in hurt/dead state
-                // We just check health > 0 on enemy — exact state check is internal
-                if enemyNode.health > 0 {
-                    let dir = CGVector(
-                        dx: player.position.x - enemyNode.position.x,
-                        dy: player.position.y - enemyNode.position.y
-                    )
-                    player.takeDamage(EnemyConst.saltKnightDamage, from: dir)
-                }
+            let enemyBody = body(for: PhysicsCategory.enemy)
+            if let enemyNode = enemyBody?.node as? EnemyNode, enemyNode.health > 0 {
+                let dir = CGVector(
+                    dx: player.position.x - enemyNode.position.x,
+                    dy: player.position.y - enemyNode.position.y
+                )
+                let damage = (enemyNode is SaltProtectorNode)
+                    ? ProtectorConst.damage
+                    : EnemyConst.saltKnightDamage
+                player.takeDamage(damage, from: dir)
             }
             return
+        }
+
+        // 5. Enemy projectile ↔ Player → player takes damage
+        if (catA == PhysicsCategory.enemyProjectile && catB == PhysicsCategory.player) ||
+           (catA == PhysicsCategory.player && catB == PhysicsCategory.enemyProjectile) {
+            let projBody = body(for: PhysicsCategory.enemyProjectile)
+            let dir = CGVector(
+                dx: player.position.x - (projBody?.node?.position.x ?? 0),
+                dy: player.position.y - (projBody?.node?.position.y ?? 0)
+            )
+            player.takeDamage(ProtectorConst.damage, from: dir)
+            projBody?.node?.removeFromParent()
+            return
+        }
+
+        // 6. Enemy projectile ↔ Wall → remove projectile
+        if (catA == PhysicsCategory.enemyProjectile && catB == PhysicsCategory.wall) ||
+           (catA == PhysicsCategory.wall && catB == PhysicsCategory.enemyProjectile) {
+            let projBody = body(for: PhysicsCategory.enemyProjectile)
+            projBody?.node?.removeFromParent()
+            return
+        }
+
+        // 7. Player ↔ Grapple zone → show prompt
+        if (catA == PhysicsCategory.player && catB == PhysicsCategory.grappleZone) ||
+           (catA == PhysicsCategory.grappleZone && catB == PhysicsCategory.player) {
+            let zoneBody = body(for: PhysicsCategory.grappleZone)
+            if let grappleNode = zoneBody?.node?.parent as? GrapplePointNode {
+                nearbyGrapplePoint = grappleNode
+                specialButton.showPrompt("Grapple!")
+            }
+            return
+        }
+
+        // 8. Player ↔ Key → collect
+        if (catA == PhysicsCategory.player && catB == PhysicsCategory.key) ||
+           (catA == PhysicsCategory.key && catB == PhysicsCategory.player) {
+            let keyBody = body(for: PhysicsCategory.key)
+            if let keyNode = keyBody?.node as? KeyNode {
+                keyNode.onCollected = { [weak self] in self?.hasKey = true }
+                keyNode.collect()
+            }
+            return
+        }
+
+        // 9. Player ↔ Locked door → try unlock
+        if (catA == PhysicsCategory.player && catB == PhysicsCategory.door) ||
+           (catA == PhysicsCategory.door && catB == PhysicsCategory.player) {
+            let doorBody = body(for: PhysicsCategory.door)
+            (doorBody?.node as? LockedDoorNode)?.tryUnlock(playerHasKey: hasKey)
+            return
+        }
+    }
+
+    func didEnd(_ contact: SKPhysicsContact) {
+        let catA = contact.bodyA.categoryBitMask
+        let catB = contact.bodyB.categoryBitMask
+
+        // Clear grapple point when player leaves detection zone
+        if (catA == PhysicsCategory.player && catB == PhysicsCategory.grappleZone) ||
+           (catA == PhysicsCategory.grappleZone && catB == PhysicsCategory.player) {
+            nearbyGrapplePoint = nil
+            specialButton.hidePrompt()
         }
     }
 
@@ -402,5 +554,5 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
 
 enum EnemyType {
     case saltKnight
-    // more enemy types added in later stages
+    case saltProtector
 }

@@ -8,7 +8,8 @@ import Foundation
 enum RoomID {
     case spawnBeach
     case crystalFields
-    // More rooms added in later stages
+    case lakeShoreEast
+    case saltCave
 }
 
 // MARK: - Edge

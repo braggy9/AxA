@@ -161,3 +161,79 @@ extension World {
     static let crystalFieldsCols: Int = 20
     static let crystalFieldsRows: Int = 11
 }
+
+// MARK: - World (Lake Shore East)
+
+extension World {
+    static let lakeShoreEastCols: Int = 20
+    static let lakeShoreEastRows: Int = 11
+}
+
+// MARK: - World (Salt Cave)
+
+extension World {
+    static let saltCaveCols: Int = 20
+    static let saltCaveRows: Int = 13
+}
+
+// MARK: - Grapple Hook
+
+enum GrappleConst {
+    static let detectionRadius:  CGFloat = 28
+    static let ropeDrawDuration: TimeInterval = 0.15
+    static let zipDuration:      TimeInterval = 0.35
+}
+
+// MARK: - Salt Protector
+
+enum ProtectorConst {
+    static let health              = 4
+    static let patrolSpeed: CGFloat = 25
+    static let chaseRadius: CGFloat = 90
+    static let shootInterval: TimeInterval = 2.2
+    static let projectileSpeed: CGFloat = 90
+    static let damage              = 1
+    static let knockback: CGFloat  = 160
+    static let shieldAngleDeg: CGFloat = 70   // frontal arc blocked by shield
+}
+
+// MARK: - Enemy Projectile
+
+enum EnemyProjectileConst {
+    static let size = CGSize(width: 6, height: 6)
+    static let lifetime: TimeInterval = 2.5
+}
+
+// MARK: - Cave Colours
+
+extension Palette {
+    static let caveFloor       = SKColor(red: 0.22, green: 0.18, blue: 0.25, alpha: 1)
+    static let caveWall        = SKColor(red: 0.12, green: 0.10, blue: 0.14, alpha: 1)
+    static let caveRock        = SKColor(red: 0.30, green: 0.25, blue: 0.35, alpha: 1)
+    static let saltCrystalWall = SKColor(red: 0.80, green: 0.65, blue: 0.78, alpha: 1)
+    static let keyGold         = SKColor(red: 1.00, green: 0.82, blue: 0.20, alpha: 1)
+    static let lockedDoor      = SKColor(red: 0.45, green: 0.25, blue: 0.10, alpha: 1)
+    static let grapplePost     = SKColor(red: 0.55, green: 0.38, blue: 0.18, alpha: 1)
+    static let grappleRing     = SKColor(red: 0.75, green: 0.60, blue: 0.25, alpha: 1)
+    static let ropeColour      = SKColor(red: 0.75, green: 0.60, blue: 0.35, alpha: 1)
+    static let bridgeWater     = SKColor(red: 0.28, green: 0.58, blue: 0.82, alpha: 1)
+}
+
+// MARK: - Physics (new categories)
+
+extension PhysicsCategory {
+    static let enemyProjectile: UInt32 = 1 << 8
+    static let grappleZone:     UInt32 = 1 << 9
+    static let breakableWall:   UInt32 = 1 << 10
+    static let door:            UInt32 = 1 << 11
+    static let key:             UInt32 = 1 << 12
+}
+
+// MARK: - Special Button
+
+enum SpecialButtonConst {
+    static let size: CGFloat = 56
+    static let xOffsetFromRight: CGFloat = 155
+    static let yOffsetFromBottom: CGFloat = 80
+    static let zPosition: CGFloat = 100
+}

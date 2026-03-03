@@ -29,8 +29,7 @@ final class CrystalFieldsScene: BaseGameScene {
         let startRow = World.crystalFieldsRows / 2
         playerStartPosition = groundMap.centerOfTile(atColumn: startCol, row: startRow)
 
-        // Left edge → Spawn Beach
-        roomTransitions = [.left: .spawnBeach]
+        roomTransitions = [.left: .spawnBeach, .right: .lakeShoreEast]
 
         // 4 Salt Knights spread across the room
         enemySpawns = [

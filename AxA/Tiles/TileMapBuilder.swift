@@ -10,6 +10,10 @@ enum TileType: Int {
     case crystal        = 4
     case nonoTree       = 5
     case wall           = 6   // invisible barrier tile
+    case bridgeWater    = 7   // water with broken plank visual — still blocks
+    case caveFloor      = 8
+    case caveWall       = 9   // solid cave wall — blocks
+    case caveRock       = 10  // dark decorative rock — blocks
 }
 
 // MARK: - TileMapBuilder
@@ -171,6 +175,131 @@ enum TileMapBuilder {
         return (groundMap, walls)
     }
 
+    // MARK: - Lake Shore East
+
+    static func buildLakeShoreEast() -> (ground: SKTileMapNode, walls: [SKNode]) {
+        let tileSize = CGSize(width: World.tileSize, height: World.tileSize)
+        let cols = World.lakeShoreEastCols
+        let rows = World.lakeShoreEastRows
+        // G=saltGround S=saltSand W=water B=bridgeWater
+        // Cols 0-7: left safe zone | Cols 8-11: water gap with broken bridge | Cols 12-19: right zone
+        let layout: [[TileType]] = [
+            // Row 10 (top)
+            [.water,.water,.water,.water,.water,.water,.water,.water,.water,.water,
+             .water,.water,.water,.water,.water,.water,.water,.water,.water,.water],
+            // Row 9
+            [.water,.saltSand,.saltSand,.saltSand,.saltSand,.saltSand,.saltSand,.saltSand,.bridgeWater,.bridgeWater,
+             .bridgeWater,.bridgeWater,.saltSand,.saltSand,.saltSand,.saltSand,.saltSand,.saltSand,.saltSand,.water],
+            // Row 8
+            [.water,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.bridgeWater,.bridgeWater,
+             .bridgeWater,.bridgeWater,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.water],
+            // Row 7
+            [.water,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.water,.water,
+             .water,.water,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.water],
+            // Row 6
+            [.water,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.water,.water,
+             .water,.water,.saltSand,.saltGround,.saltGround,.crystal,.saltGround,.saltGround,.saltSand,.water],
+            // Row 5 (middle)
+            [.water,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.water,.water,
+             .water,.water,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.water],
+            // Row 4
+            [.water,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.water,.water,
+             .water,.water,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.water],
+            // Row 3
+            [.water,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.bridgeWater,.bridgeWater,
+             .bridgeWater,.bridgeWater,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.water],
+            // Row 2
+            [.water,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.bridgeWater,.bridgeWater,
+             .bridgeWater,.bridgeWater,.saltSand,.saltGround,.saltGround,.saltGround,.saltGround,.saltGround,.saltSand,.water],
+            // Row 1
+            [.water,.water,.saltSand,.saltSand,.saltSand,.saltSand,.saltSand,.saltSand,.bridgeWater,.bridgeWater,
+             .bridgeWater,.bridgeWater,.saltSand,.saltSand,.saltSand,.saltSand,.saltSand,.saltSand,.water,.water],
+            // Row 0 (bottom)
+            [.water,.water,.water,.water,.water,.water,.water,.water,.water,.water,
+             .water,.water,.water,.water,.water,.water,.water,.water,.water,.water],
+        ]
+        return buildMap(layout: layout, cols: cols, rows: rows, tileSize: tileSize)
+    }
+
+    // MARK: - Salt Cave
+
+    static func buildSaltCave() -> (ground: SKTileMapNode, walls: [SKNode]) {
+        let tileSize = CGSize(width: World.tileSize, height: World.tileSize)
+        let cols = World.saltCaveCols
+        let rows = World.saltCaveRows
+        // F=caveFloor W=caveWall R=caveRock
+        // Tight corridors with locked door alcove on right side
+        let layout: [[TileType]] = [
+            // Row 12 (top)
+            [.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,
+             .caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall],
+            // Row 11
+            [.caveWall,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveWall,.caveFloor,
+             .caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveWall],
+            // Row 10
+            [.caveWall,.caveFloor,.caveRock,.caveRock,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveWall,.caveFloor,
+             .caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveRock,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveWall],
+            // Row 9 — upper corridor
+            [.caveWall,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveWall,.caveFloor,
+             .caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveWall],
+            // Row 8 — wall separating corridors (gap in middle)
+            [.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveFloor,.caveWall,.caveWall,.caveWall,.caveWall,
+             .caveWall,.caveWall,.caveWall,.caveWall,.caveFloor,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall],
+            // Row 7 — main corridor
+            [.caveWall,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,
+             .caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveWall],
+            // Row 6
+            [.caveWall,.caveFloor,.caveRock,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,
+             .caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveRock,.caveFloor,.caveWall],
+            // Row 5
+            [.caveWall,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,
+             .caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveWall],
+            // Row 4 — wall separating corridors (gap on left + right)
+            [.caveWall,.caveFloor,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,
+             .caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveFloor,.caveWall],
+            // Row 3 — lower corridor (hidden area with breakable walls)
+            [.caveWall,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,
+             .caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveWall],
+            // Row 2
+            [.caveWall,.caveFloor,.caveRock,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,
+             .caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveRock,.caveFloor,.caveWall],
+            // Row 1
+            [.caveWall,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,
+             .caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveFloor,.caveWall],
+            // Row 0 (bottom)
+            [.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,
+             .caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall,.caveWall],
+        ]
+        return buildMap(layout: layout, cols: cols, rows: rows, tileSize: tileSize)
+    }
+
+    // MARK: - Shared map builder
+
+    private static func buildMap(
+        layout: [[TileType]],
+        cols: Int,
+        rows: Int,
+        tileSize: CGSize
+    ) -> (ground: SKTileMapNode, walls: [SKNode]) {
+        let tileGroups = TileType.allCases.map { type -> SKTileGroup in
+            let tex = makeTexture(for: type)
+            tex.filteringMode = .nearest
+            let def = SKTileDefinition(texture: tex, size: tileSize)
+            return SKTileGroup(tileDefinition: def)
+        }
+        let tileSet = SKTileSet(tileGroups: tileGroups)
+        let groundMap = SKTileMapNode(tileSet: tileSet, columns: cols, rows: rows, tileSize: tileSize)
+        groundMap.zPosition = TileConst.groundZ
+        groundMap.enableAutomapping = false
+        for (rowIndex, row) in layout.enumerated() {
+            for (colIndex, type) in row.enumerated() {
+                groundMap.setTileGroup(tileGroups[type.rawValue], forColumn: colIndex, row: rowIndex)
+            }
+        }
+        let walls = buildWallNodes(from: layout, map: groundMap, tileSize: tileSize)
+        return (groundMap, walls)
+    }
+
     // MARK: Physics
     // Each blocking tile gets its own invisible SKSpriteNode with a physics body.
     // Simple, reliable, and easy to debug.
@@ -184,7 +313,9 @@ enum TileMapBuilder {
 
         for (rowIndex, row) in layout.enumerated() {
             for (colIndex, type) in row.enumerated() {
-                guard type == .water || type == .waterDeep || type == .nonoTree else { continue }
+                let isBlocking = type == .water || type == .waterDeep || type == .nonoTree
+                    || type == .bridgeWater || type == .caveWall || type == .caveRock
+                guard isBlocking else { continue }
 
                 let wallNode = SKNode()
                 wallNode.position = map.centerOfTile(atColumn: colIndex, row: rowIndex)
@@ -192,7 +323,8 @@ enum TileMapBuilder {
 
                 let body = SKPhysicsBody(rectangleOf: tileSize)
                 body.isDynamic = false
-                body.categoryBitMask    = (type == .nonoTree) ? PhysicsCategory.wall : PhysicsCategory.water
+                let isWallType = type == .nonoTree || type == .caveWall || type == .caveRock
+                body.categoryBitMask    = isWallType ? PhysicsCategory.wall : PhysicsCategory.water
                 body.collisionBitMask   = PhysicsCategory.player
                 body.contactTestBitMask = PhysicsCategory.player
                 body.restitution = 0
@@ -274,6 +406,44 @@ enum TileMapBuilder {
             case .wall:
                 c.setFillColor(UIColor.clear.cgColor)
                 c.fill(CGRect(origin: .zero, size: size))
+            case .bridgeWater:
+                // Water with broken wooden plank remnants
+                c.setFillColor(Palette.bridgeWater.cgColor)
+                c.fill(CGRect(origin: .zero, size: size))
+                // Wave
+                c.setStrokeColor(UIColor(white: 1, alpha: 0.25).cgColor)
+                c.setLineWidth(0.8)
+                c.move(to: CGPoint(x: 1, y: 9)); c.addLine(to: CGPoint(x: 5, y: 7))
+                c.addLine(to: CGPoint(x: 9, y: 9)); c.addLine(to: CGPoint(x: 13, y: 7))
+                c.strokePath()
+                // Broken plank fragments
+                c.setFillColor(SKColor(red: 0.45, green: 0.30, blue: 0.12, alpha: 0.8).cgColor)
+                c.fill(CGRect(x: 2, y: 11, width: 5, height: 2))
+                c.fill(CGRect(x: 9, y: 4, width: 4, height: 2))
+            case .caveFloor:
+                c.setFillColor(Palette.caveFloor.cgColor)
+                c.fill(CGRect(origin: .zero, size: size))
+                // Stone texture dots
+                c.setFillColor(UIColor(white: 1, alpha: 0.06).cgColor)
+                c.fillEllipse(in: CGRect(x: 3, y: 3, width: 2, height: 2))
+                c.fillEllipse(in: CGRect(x: 10, y: 8, width: 1.5, height: 1.5))
+                c.fillEllipse(in: CGRect(x: 7, y: 12, width: 2, height: 1.5))
+            case .caveWall:
+                c.setFillColor(Palette.caveWall.cgColor)
+                c.fill(CGRect(origin: .zero, size: size))
+                // Subtle highlight
+                c.setStrokeColor(UIColor(white: 1, alpha: 0.08).cgColor)
+                c.setLineWidth(0.5)
+                c.move(to: CGPoint(x: 0, y: 4)); c.addLine(to: CGPoint(x: 8, y: 4))
+                c.move(to: CGPoint(x: 6, y: 10)); c.addLine(to: CGPoint(x: 16, y: 10))
+                c.strokePath()
+            case .caveRock:
+                c.setFillColor(Palette.caveRock.cgColor)
+                c.fill(CGRect(origin: .zero, size: size))
+                // Rock outline
+                c.setStrokeColor(UIColor(white: 0, alpha: 0.3).cgColor)
+                c.setLineWidth(0.5)
+                c.stroke(CGRect(x: 0.5, y: 0.5, width: size.width - 1, height: size.height - 1))
             }
         }
         return SKTexture(image: img)

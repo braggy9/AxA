@@ -245,7 +245,11 @@ final class PlayerNode: SKNode {
         body.contactTestBitMask = PhysicsCategory.trigger |
                                   PhysicsCategory.interactable |
                                   PhysicsCategory.crystal |
-                                  PhysicsCategory.enemy
+                                  PhysicsCategory.enemy |
+                                  PhysicsCategory.enemyProjectile |
+                                  PhysicsCategory.grappleZone |
+                                  PhysicsCategory.key |
+                                  PhysicsCategory.door
         body.allowsRotation = false
         body.linearDamping = 8
         physicsBody = body
