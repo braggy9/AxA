@@ -53,6 +53,14 @@ Floor is black volcanic stone. Bushes made of liquid fire that drips occasionall
 - **Special:** Fits through narrow passages. Can swim through shallow water.
 - **Puzzle Use:** Access small passages for shortcuts/secrets (more relevant Worlds 2-3)
 
+### ET — Big Dude (DESIGN PENDING — awaiting Zig's input)
+- ⚠️ Full character design TBD. See Notion brain dump for questions to ask Zig.
+- Known so far: big character, distinct from others
+- **Attack:** TBD
+- **Special:** TBD
+- **Unlock:** TBD
+- **Puzzle Use:** TBD (likely strength-based — break large obstacles, push heavy things?)
+
 ### Character Switching
 - Start with Wiz only. Unlock others via snack bags or boss defeats.
 - Switch anytime via Tablet UI or quick-switch (double-tap portrait on HUD).

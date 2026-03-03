@@ -78,6 +78,7 @@ Last updated: 2026-03-04
 | Wiz | ✅ Playable | Starter |
 | Bob the Chicken | ⬜ Not built | Snack bag in Salt Cave (Stage 4) |
 | Babeee | ⬜ Not built | Defeat Monontoe (Stage 5) |
+| ET | ⬜ Design pending | TBD — awaiting Zig's input (see Notion brain dump) |
 
 ---
 

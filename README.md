@@ -16,6 +16,7 @@ You play as an axolotl exploring worlds, solving puzzles, and battling evil axol
 - **Wiz** — Wizard axolotl with a staff that becomes a grappling hook
 - **Bob** — A chicken. Just a chicken. He's vibing.
 - **Babeee** — Tiny baby axolotl who fits through small passages
+- **ET** — Big dude. Details TBD (designed by Zig).
 
 ## Tech
 - Swift 6+ / SpriteKit / GameplayKit
