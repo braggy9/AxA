@@ -1,6 +1,6 @@
 # AxA — Build Plan
 
-## Current Status: Stage 3 Complete ✅
+## Current Status: Stage 4 Complete ✅
 Last updated: 2026-03-04
 
 ---
@@ -25,11 +25,11 @@ Last updated: 2026-03-04
 - [x] **3.3** Salt Protector enemy — ranged crystal projectiles, frontal shield mechanic
 - [x] **3.4** Breakable salt crystal walls + hidden golden key + locked door
 
-### Stage 4: Character System — NEXT
-- [ ] **4.1** Snack Bag system — gold bag with white smiley face, open reveal animation, light shaft effect
-- [ ] **4.2** Bob the Chicken unlock — Bob emerges from snack bag in the Salt Cave with a celebration sequence
-- [ ] **4.3** Character switching — double-tap portrait on HUD or dedicated swap button. Sparkle effect. Each character keeps own HP.
-- [ ] **4.4** Bob's abilities — Peck attack (short range, fast), Flutter Jump (short glide on B), Dig (hold B on soft ground to find hidden items)
+### Stage 4: Character System ✅ COMPLETE
+- [x] **4.1** Snack Bag system — gold bag with white smiley face, open reveal animation, light shaft effect
+- [x] **4.2** Bob the Chicken unlock — Bob emerges from snack bag in the Salt Cave with a celebration sequence
+- [x] **4.3** Character switching — tap portrait on HUD. Sparkle effect. Each character keeps own HP.
+- [x] **4.4** Bob's abilities — Peck attack (short range 9px, 0.3s cooldown), Flutter Dash (quick burst on B), Dig (press B on soft ground to find hidden crystals)
 
 ### Stage 5: World Completion
 - [ ] **5.1** Lake Shore West room (Room 5) — Water Level switch puzzle. Three crystal switches, correct order lowers water. Wrong order resets. Colour hint on wall.
@@ -54,7 +54,7 @@ Last updated: 2026-03-04
 | 1 | Spawn Beach | ✅ Built | Starting area, safe zone, nono trees as obstacles |
 | 2 | Crystal Fields | ✅ Built | 4 Salt Knights, connects to Spawn Beach and Lake Shore East |
 | 3 | Lake Shore East | ✅ Built | Broken bridge, grappling hook posts, 2 Salt Knights on far side |
-| 4 | Salt Cave | ✅ Built | 2 Salt Protectors, breakable walls, key, locked door (Bob behind it) |
+| 4 | Salt Cave | ✅ Built | 2 Salt Protectors, breakable walls, key, locked door, snack bag (Bob unlock), 2 dig spots |
 | 5 | Lake Shore West | ⬜ Not built | Water level switches puzzle |
 | 6 | Nono Grove | ⬜ Not built | Gate check, "no no no"/"go go go" dialogue |
 | 7 | Monontoe's Lair | ⬜ Not built | 3-phase boss arena |
@@ -76,7 +76,7 @@ Last updated: 2026-03-04
 | Character | Status | Unlock Method |
 |-----------|--------|---------------|
 | Wiz | ✅ Playable | Starter |
-| Bob the Chicken | ⬜ Not built | Snack bag in Salt Cave (Stage 4) |
+| Bob the Chicken | ✅ Playable | Snack bag in Salt Cave — peck, flutter dash, dig |
 | Babeee | ⬜ Not built | Defeat Monontoe (Stage 5) |
 | ET | ⬜ Design pending | TBD — awaiting Zig's input (see Notion brain dump) |
 
@@ -85,15 +85,16 @@ Last updated: 2026-03-04
 ## Definition of Done (World 1)
 
 - [x] Wiz walks around all 7 rooms — 4/7 rooms built
+- [x] Bob the Chicken unlockable and playable (Salt Cave snack bag)
 - [x] Virtual joystick and attack button work reliably
 - [x] Salt Knights patrol and can be fought/defeated
 - [x] Salt Protectors have shields and throw projectiles
 - [x] Broken Bridge puzzle works with grappling hook
 - [ ] Water Level puzzle works with switches
 - [x] Salt Cave has locked door + key (snack bag behind door — Stage 4)
-- [ ] Snack bag unlocks Bob the Chicken with celebration
-- [ ] Character switching works between Wiz and Bob
-- [ ] Bob has distinct attack (peck) and ability (flutter jump, dig)
+- [x] Snack bag unlocks Bob the Chicken with celebration
+- [x] Character switching works between Wiz and Bob
+- [x] Bob has distinct attack (peck) and ability (flutter dash, dig)
 - [ ] Nono Trees block exit until all challenges complete
 - [ ] Nono Trees chant "no no no" / "go go go" appropriately
 - [ ] Monontoe boss fight has 3 phases

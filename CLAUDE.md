@@ -4,9 +4,10 @@
 A top-down 2D adventure game (Zelda-style) built with Swift + SpriteKit for iPad/iPhone. Designed by Zig (age 6) and his dad Tom.
 
 ## Current Status (2026-03-04)
-**Stage 3 complete.** Stages 1–3 fully built and committed.
+**Stage 4 complete.** Stages 1–4 fully built and committed.
 - 4 of 7 World 1 rooms are playable (Spawn Beach, Crystal Fields, Lake Shore East, Salt Cave)
-- Next: **Stage 4** — Snack Bag system + Bob the Chicken unlock + character switching
+- Bob the Chicken fully playable: peck attack, flutter dash, dig, per-character HP
+- Next: **Stage 5** — Lake Shore West (water switches), Nono Grove, Monontoe boss, Babeee unlock
 - See `docs/BUILD-PLAN.md` for full progress tracker
 
 ## Key Reference Docs
@@ -58,16 +59,18 @@ AxA/
 │   ├── LakeShoreEastScene.swift
 │   └── SaltCaveScene.swift
 ├── Nodes/
-│   ├── PlayerNode.swift     — Movement, attack, grapple, damage, death
-│   ├── HUDNode.swift        — Health bar, crystal counter
+│   ├── PlayerNode.swift     — Movement, attack, character switching, Bob abilities
+│   ├── HUDNode.swift        — Health bar, crystal counter, character portrait
 │   ├── AttackButtonNode.swift (A button)
-│   ├── SpecialButtonNode.swift (B button — grapple hook, future: Bob abilities)
+│   ├── SpecialButtonNode.swift (B button — context-aware: Grapple/Flutter/Dig hint)
 │   ├── VirtualJoystickNode.swift
 │   ├── CrystalNode.swift    — Collectible drop
 │   ├── GrapplePointNode.swift — Wooden post with detection zone
 │   ├── BreakableWallNode.swift — Shatters on one hit
 │   ├── KeyNode.swift        — Golden key collectible
-│   └── LockedDoorNode.swift — Opens when player has key
+│   ├── LockedDoorNode.swift — Opens when player has key
+│   ├── SnackBagNode.swift   — Gold snack bag, reveal animation, triggers character unlock
+│   └── SoftGroundNode.swift — Dig spot for Bob (press B to uncover crystals)
 └── Enemies/
     ├── EnemyNode.swift      — Base class (health, damage, knockback, crystal drops)
     ├── SaltKnightNode.swift + AIStates.swift
@@ -84,7 +87,7 @@ AxA/
 ```
 player, enemy, projectile (player attack hitbox), wall, water,
 interactable, trigger, crystal, enemyProjectile, grappleZone,
-breakableWall, door, key
+breakableWall, door, key, snackBag, softGround
 ```
 
 ## Important Creative Details (from Zig)
