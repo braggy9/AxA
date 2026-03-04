@@ -1,6 +1,6 @@
 # AxA — Build Plan
 
-## Current Status: World Overhaul Complete ✅
+## Current Status: Stage 5 Complete ✅
 Last updated: 2026-03-04
 
 ---
@@ -46,16 +46,22 @@ Last updated: 2026-03-04
   - Wiz: NEW second unlock — snack bag in Crystal Fields, col 40 row 14
 - [x] **W.10** 6 Salt Knights in Crystal Fields (was 4), better spread across expanded room
 
-### Stage 5: World Completion
-- [ ] **5.1** Lake Shore West room (Room 5) — Water Level switch puzzle. Three crystal switches, correct order lowers water. Wrong order resets. Colour hint on wall.
-- [ ] **5.2** Nono Grove room (Room 6) — Ring of nono trees. Gate check: all rooms cleared? Trees chant "no no no" / "go go go". Dialogue system needed.
-- [ ] **5.3** Monontoe boss fight (Room 7) — 3 phases: charge/dodge, summons Salt Knights + tail whip, faster + ground slam shockwave.
-- [ ] **5.4** Babeee SECOND unlock — post-Monontoe reward snack bag with celebration (Babeee is starter so this is now a "reward" moment, perhaps unlocking a secret ability or cosmetic)
+### Stage 5: World Completion ✅ COMPLETE
+- [x] **5.1** Lake Shore West room (Room 5) — Water Level switch puzzle. Green→Blue→Red correct order drains flood overlays. Wrong order: red flash + reset.
+- [x] **5.2** Nono Grove room (Room 6) — Ring of 12 nono trees. Gate check: Bob AND Wiz unlocked. DialogueNode: "NO! NO! NO!" / "GO! GO! GO!" typewriter effect, tap to advance.
+- [x] **5.3** Monontoe boss fight (Room 7) — 3 phases: charge + chase / tail whip + Salt Knight summons / faster + ground slam shockwave. 12 HP boss health bar in HUD.
+- [x] **5.4** ET unlock — post-Monontoe snack bag. ET is pale mint alien axolotl: Stun Touch (A), Float/speed boost (B), 4 HP. Alien-style oversized eyes, bioluminescent gill fronds.
+
+### Stage 5 Extra: Axolotl Redesigns ✅ COMPLETE
+- [x] Babeee: redesigned with proper gill frond stalks, stubby legs, sweeping tail — clearly axolotl
+- [x] Wiz: redesigned as axolotl wizard — hat on center gill frond, gold staff, round purple body, legs, tail
+- [x] Monontoe: 48×48 dark teal boss axolotl — dramatic 6 fronds, vertical slit pupils, wide tooth-filled mouth
+- [x] ET: bioluminescent mint axolotl — 3 glowing frond tips, massive alien eyes, slender body
 
 ### Stage 6: Polish & Flow
 - [ ] **6.1** Tablet UI — minimap, current quest, character roster, inventory. Opens on Y button.
 - [ ] **6.2** Main menu + intro text + "World 1 Complete" screen + World 2 tease
-- [ ] **6.3** Dialogue system — text box at screen bottom. Portrait left, text right. Typewriter effect. Tap to advance.
+- [x] **6.3** Dialogue system — DialogueNode: text box at screen bottom. Typewriter effect. Tap to advance. ✅ Done (used in NonoGrove)
 - [ ] **6.4** Save system — auto-save on room transition + key events using UserDefaults or JSON
 - [ ] **6.5** Audio — royalty-free 8-bit/chiptune SFX and music. Build silent first with system ready for drop-in.
 - [ ] **6.6** Polish — screen shake on hits, particle sparkles on collection/unlock, death animations, crystal sparkle trails
@@ -70,9 +76,9 @@ Last updated: 2026-03-04
 | 2 | Crystal Fields | ✅ Built | 44×28 tiles, 6 Salt Knights, Wiz snack bag (col 40 row 14) |
 | 3 | Lake Shore East | ✅ Built | 40×24 tiles, broken bridge gap cols 14-24, 2 grapple posts at col 13 |
 | 4 | Salt Cave | ✅ Built | 36×28 tiles, 2 Salt Protectors, key, locked door, Bob snack bag, 2 dig spots |
-| 5 | Lake Shore West | ⬜ Not built | Water level switches puzzle |
-| 6 | Nono Grove | ⬜ Not built | Gate check, "no no no"/"go go go" dialogue |
-| 7 | Monontoe's Lair | ⬜ Not built | 3-phase boss arena |
+| 5 | Lake Shore West | ✅ Built | 42×26 tiles, 3-switch water puzzle (G→B→R), flood overlays |
+| 6 | Nono Grove | ✅ Built | 40×32 tiles, 12-tree ring, gate check (Bob+Wiz), dialogue |
+| 7 | Monontoe's Lair | ✅ Built | 44×34 tiles, boss arena with pillars, 3-phase fight |
 
 ---
 
@@ -82,7 +88,7 @@ Last updated: 2026-03-04
 |-------|--------|----------|-------|
 | Salt Knight | ✅ Built | Rooms 2, 3 | Patrol + chase AI, 2 HP, 28×28 sprite, drops crystals |
 | Salt Protector | ✅ Built | Room 4 | Ranged, frontal shield, 4 HP, 28×28 sprite |
-| Monontoe | ⬜ Not built | Room 7 | 3-phase boss |
+| Monontoe | ✅ Built | Room 7 | 3-phase boss: charge+chase / tail whip+summons / ground slam, 12 HP |
 
 ---
 
@@ -93,7 +99,7 @@ Last updated: 2026-03-04
 | Babeee | ✅ Playable | **STARTER** (Zig's design) | Tail Slap (A, very short range), Tiny Rush (B, dash + brief invincibility) |
 | Bob the Chicken | ✅ Playable | Snack bag in Salt Cave | Peck (A, 0.3s), Flutter Dash (B), Dig (B on soft ground) |
 | Wiz | ✅ Playable | Snack bag in Crystal Fields | Staff Swing (A, medium range), Grapple Hook (B near posts) |
-| ET | ⬜ Design pending | TBD — awaiting Zig's input | TBD |
+| ET | ✅ Playable | Snack bag in Monontoe's Lair (post-boss) | Stun Touch (A, 0.5s cooldown), Float (B, speed boost + hover) |
 
 ---
 
@@ -106,14 +112,14 @@ Last updated: 2026-03-04
 - [x] Salt Knights patrol and can be fought/defeated
 - [x] Salt Protectors have shields and throw projectiles
 - [x] Broken Bridge puzzle works with grappling hook
-- [ ] Water Level puzzle works with switches
+- [x] Water Level puzzle works with switches (green→blue→red, flood drains)
 - [x] Salt Cave has locked door + key (snack bag behind door)
 - [x] Snack bags unlock characters with celebration
-- [x] Character switching works between all unlocked characters
+- [x] Character switching works between all unlocked characters (Babeee/Bob/Wiz/ET)
 - [x] Each character has distinct attack and B-button ability
-- [ ] Nono Trees block exit until all challenges complete
-- [ ] Nono Trees chant "no no no" / "go go go" appropriately
-- [ ] Monontoe boss fight has 3 phases
+- [x] Nono Trees block exit until Bob AND Wiz are unlocked
+- [x] Nono Trees chant "no no no" / "go go go" appropriately (DialogueNode)
+- [x] Monontoe boss fight has 3 phases (charge/tail whip+summons/ground slam)
 - [ ] Game saves progress
 - [ ] Main menu exists
 - [ ] Runs smoothly on iPad
