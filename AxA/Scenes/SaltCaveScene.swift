@@ -26,7 +26,7 @@ final class SaltCaveScene: BaseGameScene {
         // Player enters from left — start in left corridor
         playerStartPosition = groundMap.centerOfTile(atColumn: 3, row: 13)
 
-        roomTransitions = [.left: .lakeShoreEast]
+        roomTransitions = [.left: .lakeShoreEast, .right: .lakeShoreWest]
 
         // Two Salt Protectors in the main corridor
         enemySpawns = [

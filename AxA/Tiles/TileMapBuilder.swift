@@ -15,6 +15,9 @@ enum TileType: Int {
     case caveWall    = 9   // solid cave wall — blocks
     case caveRock    = 10  // dark decorative rock — blocks
     case saltRock    = 11  // outdoor blocking rock formation
+    case groveGrass  = 12  // Nono Grove lush floor — walkable
+    case bossFloor   = 13  // Monontoe's arena floor — walkable
+    case bossWall    = 14  // Monontoe's arena wall — blocks
 }
 
 // MARK: - TileMapBuilder
@@ -256,7 +259,7 @@ enum TileMapBuilder {
             for (colIndex, type) in row.enumerated() {
                 let isBlocking = type == .water || type == .waterDeep || type == .nonoTree
                     || type == .bridgeWater || type == .caveWall || type == .caveRock
-                    || type == .saltRock
+                    || type == .saltRock || type == .bossWall
                 guard isBlocking else { continue }
 
                 let wallNode = SKNode()
@@ -265,7 +268,8 @@ enum TileMapBuilder {
 
                 let body = SKPhysicsBody(rectangleOf: tileSize)
                 body.isDynamic = false
-                let isWallType = type == .nonoTree || type == .caveWall || type == .caveRock || type == .saltRock
+                let isWallType = type == .nonoTree || type == .caveWall || type == .caveRock
+                    || type == .saltRock || type == .bossWall
                 body.categoryBitMask    = isWallType ? PhysicsCategory.wall : PhysicsCategory.water
                 body.collisionBitMask   = PhysicsCategory.player
                 body.contactTestBitMask = PhysicsCategory.player
@@ -427,29 +431,169 @@ enum TileMapBuilder {
                 c.stroke(CGRect(x: 1, y: 1, width: s - 2, height: s - 2).insetBy(dx: 1, dy: 1))
 
             case .saltRock:
-                // Ground background
                 c.setFillColor(Palette.saltGround.cgColor)
                 c.fill(CGRect(origin: .zero, size: size))
-                // Main boulder — rounded rectangle
                 c.setFillColor(Palette.saltRock.cgColor)
                 let boulderRect = CGRect(x: s * 0.06, y: s * 0.06, width: s * 0.88, height: s * 0.82)
                 let boulderPath = UIBezierPath(roundedRect: boulderRect, cornerRadius: s * 0.28)
                 c.addPath(boulderPath.cgPath)
                 c.fillPath()
-                // Highlight — lighter upper-left
                 c.setFillColor(UIColor(red: 0.90, green: 0.80, blue: 0.78, alpha: 0.7).cgColor)
                 let highlightRect = CGRect(x: s * 0.14, y: s * 0.50, width: s * 0.42, height: s * 0.25)
                 let highlightPath = UIBezierPath(roundedRect: highlightRect, cornerRadius: s * 0.12)
                 c.addPath(highlightPath.cgPath)
                 c.fillPath()
-                // Dark outline
                 c.setStrokeColor(UIColor(red: 0.55, green: 0.42, blue: 0.40, alpha: 0.7).cgColor)
                 c.setLineWidth(1.2)
                 c.addPath(boulderPath.cgPath)
                 c.strokePath()
+
+            case .groveGrass:
+                c.setFillColor(Palette.groveFloor.cgColor)
+                c.fill(CGRect(origin: .zero, size: size))
+                // Darker grass blades
+                c.setStrokeColor(Palette.groveDark.cgColor)
+                c.setLineWidth(1.0)
+                let bladeXs: [CGFloat] = [s * 0.15, s * 0.35, s * 0.55, s * 0.75]
+                for bx in bladeXs {
+                    c.move(to: CGPoint(x: bx, y: s * 0.08))
+                    c.addLine(to: CGPoint(x: bx + s * 0.06, y: s * 0.28))
+                }
+                c.strokePath()
+                // Bright highlight patch
+                c.setFillColor(UIColor(red: 0.45, green: 0.88, blue: 0.50, alpha: 0.45).cgColor)
+                c.fillEllipse(in: CGRect(x: s * 0.22, y: s * 0.44, width: s * 0.28, height: s * 0.20))
+
+            case .bossFloor:
+                c.setFillColor(Palette.bossFloor.cgColor)
+                c.fill(CGRect(origin: .zero, size: size))
+                // Faint rune-like lines
+                c.setStrokeColor(UIColor(red: 0.35, green: 0.20, blue: 0.55, alpha: 0.25).cgColor)
+                c.setLineWidth(0.5)
+                c.move(to: CGPoint(x: 0, y: s * 0.35))
+                c.addLine(to: CGPoint(x: s, y: s * 0.35))
+                c.move(to: CGPoint(x: s * 0.35, y: 0))
+                c.addLine(to: CGPoint(x: s * 0.35, y: s))
+                c.strokePath()
+
+            case .bossWall:
+                c.setFillColor(Palette.bossWall.cgColor)
+                c.fill(CGRect(origin: .zero, size: size))
+                // Subtle violet highlight seam
+                c.setStrokeColor(UIColor(red: 0.28, green: 0.14, blue: 0.45, alpha: 0.30).cgColor)
+                c.setLineWidth(0.5)
+                c.move(to: CGPoint(x: 0, y: s * 0.6))
+                c.addLine(to: CGPoint(x: s * 0.7, y: s * 0.6))
+                c.strokePath()
             }
         }
         return SKTexture(image: img)
+    }
+
+    // MARK: - Lake Shore West (42 × 26)
+    // Water level switch puzzle. Left → Salt Cave, Right → Nono Grove.
+
+    static func buildLakeShoreWest() -> (ground: SKTileMapNode, walls: [SKNode]) {
+        let tileSize = CGSize(width: World.tileSize, height: World.tileSize)
+        let cols = World.lakeShoreWestCols
+        let rows = World.lakeShoreWestRows
+
+        var layout = beachBase(cols: cols, rows: rows)
+
+        // Left safe zone (cols 2-18) — always accessible, holds the switches
+        // Right puzzle zone (cols 19-40) — blocked by flood water (added as overlay nodes by scene)
+
+        // Salt rocks for visual interest / cover
+        let rocks: [(col: Int, row: Int)] = [
+            (5, 21), (6, 21), (12, 8), (13, 8),
+            (15, 20), (16, 20), (8, 5), (9, 5)
+        ]
+        setMany(.saltRock, positions: rocks, in: &layout)
+
+        // Crystals in right zone (reward for solving puzzle)
+        let crystals: [(col: Int, row: Int)] = [
+            (22, 20), (28, 14), (33, 8), (38, 20),
+            (24, 8), (36, 14)
+        ]
+        setMany(.crystal, positions: crystals, in: &layout)
+
+        // Nono trees framing entrance
+        let trees: [(col: Int, row: Int)] = [
+            (3, 20), (3, 6), (17, 13)
+        ]
+        setMany(.nonoTree, positions: trees, in: &layout)
+
+        return buildMap(layout: layout, cols: cols, rows: rows, tileSize: tileSize)
+    }
+
+    // MARK: - Nono Grove (40 × 32)
+    // Ring of nono trees. Gate check. Dialogue triggers.
+
+    static func buildNonoGrove() -> (ground: SKTileMapNode, walls: [SKNode]) {
+        let tileSize = CGSize(width: World.tileSize, height: World.tileSize)
+        let cols = World.nonoGroveCols
+        let rows = World.nonoGroveRows
+
+        var layout = Array(repeating: Array(repeating: TileType.groveGrass, count: cols), count: rows)
+
+        // Water border
+        for r in 0..<rows {
+            for c in 0..<cols {
+                if r < 2 || r >= rows - 2 || c < 1 || c >= cols - 1 {
+                    layout[r][c] = .water
+                }
+            }
+        }
+
+        // Ring of nono trees framing the sacred circle
+        // Outer ring at radius ~10 from centre (col 20, row 16)
+        let cx = 20, cy = 16
+        let ringPositions: [(col: Int, row: Int)] = [
+            (cx, cy + 11), (cx - 6, cy + 9), (cx + 6, cy + 9),
+            (cx - 10, cy + 5), (cx + 10, cy + 5),
+            (cx - 12, cy), (cx + 12, cy),
+            (cx - 10, cy - 5), (cx + 10, cy - 5),
+            (cx - 6, cy - 9), (cx + 6, cy - 9),
+            (cx, cy - 11)
+        ]
+        setMany(.nonoTree, positions: ringPositions, in: &layout)
+
+        // Scattered crystal offerings
+        let crystals: [(col: Int, row: Int)] = [
+            (cx - 3, cy + 4), (cx + 3, cy + 4),
+            (cx - 4, cy - 2), (cx + 4, cy - 2),
+            (cx, cy + 6)
+        ]
+        setMany(.crystal, positions: crystals, in: &layout)
+
+        return buildMap(layout: layout, cols: cols, rows: rows, tileSize: tileSize)
+    }
+
+    // MARK: - Monontoe's Lair (44 × 34)
+    // Boss arena. Open central floor surrounded by dark walls.
+
+    static func buildMonontoeLair() -> (ground: SKTileMapNode, walls: [SKNode]) {
+        let tileSize = CGSize(width: World.tileSize, height: World.tileSize)
+        let cols = World.monontoeLairCols
+        let rows = World.monontoeLairRows
+
+        // All walls by default
+        var layout = Array(repeating: Array(repeating: TileType.bossWall, count: cols), count: rows)
+
+        // Open arena floor — generous battle space
+        fillRect(.bossFloor, cols: 2...41, rows: 3...30, in: &layout)
+
+        // Pillars for cover (pairs of boss wall tiles)
+        let pillarPositions: [(col: Int, row: Int)] = [
+            (8, 8), (8, 9), (9, 8),
+            (34, 8), (34, 9), (35, 8),
+            (8, 24), (8, 25), (9, 24),
+            (34, 24), (34, 25), (35, 24),
+            (20, 14), (21, 14), (20, 20), (21, 20)
+        ]
+        setMany(.bossWall, positions: pillarPositions, in: &layout)
+
+        return buildMap(layout: layout, cols: cols, rows: rows, tileSize: tileSize)
     }
 }
 

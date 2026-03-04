@@ -144,6 +144,7 @@ final class HUDNode: SKNode {
         case .babeee: tex = HUDNode.makeBabeePortraitTexture()
         case .wiz:    tex = HUDNode.makeWizPortraitTexture()
         case .bob:    tex = HUDNode.makeBobPortraitTexture()
+        case .et:     tex = HUDNode.makeETPortraitTexture()
         }
         portraitIcon.texture = tex
 
@@ -243,6 +244,40 @@ final class HUDNode: SKNode {
             c.setFillColor(UIColor.white.cgColor)
             c.fillEllipse(in: CGRect(x: 6,  y: h * 0.38, width: 3, height: 3))
             c.fillEllipse(in: CGRect(x: 11, y: h * 0.38, width: 3, height: 3))
+        }
+        let tex = SKTexture(image: img)
+        tex.filteringMode = .nearest
+        return tex
+    }
+
+    private static func makeETPortraitTexture() -> SKTexture {
+        let s = HUDConst.portraitSize
+        let size = CGSize(width: s, height: s)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let img = renderer.image { ctx in
+            let c = ctx.cgContext
+            let w = size.width, h = size.height
+
+            // Mint body
+            c.setFillColor(Palette.etBody.cgColor)
+            c.fillEllipse(in: CGRect(x: 2, y: 2, width: w - 4, height: h - 6))
+
+            // Head
+            c.fillEllipse(in: CGRect(x: 2, y: h * 0.48, width: w - 4, height: h * 0.52))
+
+            // Glowing gill tips — 3 top
+            c.setFillColor(Palette.etGlow.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.12, y: h * 0.88, width: w * 0.18, height: w * 0.18))
+            c.fillEllipse(in: CGRect(x: w * 0.41, y: h * 0.91, width: w * 0.18, height: w * 0.18))
+            c.fillEllipse(in: CGRect(x: w * 0.70, y: h * 0.88, width: w * 0.18, height: w * 0.18))
+
+            // Large alien eyes
+            c.setFillColor(Palette.etGlow.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.08, y: h * 0.55, width: w * 0.32, height: h * 0.28))
+            c.fillEllipse(in: CGRect(x: w * 0.60, y: h * 0.55, width: w * 0.32, height: h * 0.28))
+            c.setFillColor(UIColor.black.cgColor)
+            c.fillEllipse(in: CGRect(x: w * 0.14, y: h * 0.60, width: w * 0.18, height: h * 0.16))
+            c.fillEllipse(in: CGRect(x: w * 0.66, y: h * 0.60, width: w * 0.18, height: h * 0.16))
         }
         let tex = SKTexture(image: img)
         tex.filteringMode = .nearest

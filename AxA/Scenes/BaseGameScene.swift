@@ -33,6 +33,7 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
     var babeeHealth: Int = BabeeConst.maxHealth
     var bobHealth: Int   = BobConst.maxHealth
     var wizHealth: Int   = PlayerCombatConst.maxHealth
+    var etHealth: Int    = ETConst.maxHealth
 
     // Crystal counter (passed between rooms)
     var crystalCount: Int = 0 {
@@ -84,6 +85,9 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
 
     func subclassSetup() { /* no-op in base */ }
 
+    /// Called each frame with delta time, after all base updates. Override in subclasses.
+    func subclassUpdate(_ dt: TimeInterval) { /* no-op in base */ }
+
     // MARK: - Camera
 
     private func setupCamera() {
@@ -133,6 +137,7 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         player.babeeHealth        = babeeHealth
         player.bobHealth          = bobHealth
         player.wizHealth          = wizHealth
+        player.etHealth           = etHealth
         switch activeCharacter {
         case .babeee:
             player.maxHealth     = BabeeConst.maxHealth
@@ -143,6 +148,9 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         case .wiz:
             player.maxHealth     = PlayerCombatConst.maxHealth
             player.currentHealth = wizHealth
+        case .et:
+            player.maxHealth     = ETConst.maxHealth
+            player.currentHealth = etHealth
         }
 
         if let edge = playerStartEdge {
@@ -263,6 +271,8 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
             } else {
                 specialButton.showPrompt("Flutter!")
             }
+        case .et:
+            specialButton.showPrompt("Float!")
         }
     }
 
@@ -278,6 +288,8 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
             } else {
                 player.performFlutterDash()
             }
+        case .et:
+            player.performFloat()
         }
     }
 
@@ -399,15 +411,19 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         let currentBabeeHP = act == .babeee ? player.currentHealth : player.babeeHealth
         let currentBobHP   = act == .bob    ? player.currentHealth : player.bobHealth
         let currentWizHP   = act == .wiz    ? player.currentHealth : player.wizHealth
+        let currentEtHP    = act == .et     ? player.currentHealth : player.etHealth
 
         let transition = SKTransition.fade(withDuration: RoomConst.transitionFadeDuration)
 
         let destScene: BaseGameScene
         switch destination {
-        case .spawnBeach:   destScene = SpawnBeachScene(size: size)
+        case .spawnBeach:    destScene = SpawnBeachScene(size: size)
         case .crystalFields: destScene = CrystalFieldsScene(size: size)
         case .lakeShoreEast: destScene = LakeShoreEastScene(size: size)
-        case .saltCave:     destScene = SaltCaveScene(size: size)
+        case .saltCave:      destScene = SaltCaveScene(size: size)
+        case .lakeShoreWest: destScene = LakeShoreWestScene(size: size)
+        case .nonoGrove:     destScene = NonoGroveScene(size: size)
+        case .monontoeLair:  destScene = MonontoeScene(size: size)
         }
 
         destScene.scaleMode          = scaleMode
@@ -419,6 +435,7 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         destScene.babeeHealth        = currentBabeeHP
         destScene.bobHealth          = currentBobHP
         destScene.wizHealth          = currentWizHP
+        destScene.etHealth           = currentEtHP
 
         view?.presentScene(destScene, transition: transition)
     }
@@ -443,6 +460,7 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
         for knight    in saltKnights    { knight.update(deltaTime: dt) }
         for protector in saltProtectors { protector.update(deltaTime: dt) }
 
+        subclassUpdate(dt)
         updateCamera()
     }
 
@@ -518,7 +536,10 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
             if let enemy = eb?.node as? EnemyNode, enemy.health > 0 {
                 let dir = CGVector(dx: player.position.x - enemy.position.x,
                                    dy: player.position.y - enemy.position.y)
-                let dmg = (enemy is SaltProtectorNode) ? ProtectorConst.damage : EnemyConst.saltKnightDamage
+                let dmg: Int
+                if enemy is MonontoeNode { dmg = MonontoeConst.damage }
+                else if enemy is SaltProtectorNode { dmg = ProtectorConst.damage }
+                else { dmg = EnemyConst.saltKnightDamage }
                 player.takeDamage(dmg, from: dir)
             }
             return
@@ -590,6 +611,14 @@ class BaseGameScene: SKScene, SKPhysicsContactDelegate {
                 nearbyDigSpot = digNode
                 updateSpecialButtonHint()
             }
+            return
+        }
+
+        // 12. Player ↔ Water switch → activate (handled by LakeShoreWestScene via onTouched callback)
+        if (catA == PhysicsCategory.player      && catB == PhysicsCategory.waterSwitch) ||
+           (catA == PhysicsCategory.waterSwitch && catB == PhysicsCategory.player) {
+            let wb = body(for: PhysicsCategory.waterSwitch)
+            (wb?.node as? WaterSwitchNode)?.playerTouched()
             return
         }
     }

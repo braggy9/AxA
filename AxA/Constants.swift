@@ -35,6 +35,27 @@ extension World {
     static let saltCaveRows: Int = 28
 }
 
+// MARK: - World (Lake Shore West)
+
+extension World {
+    static let lakeShoreWestCols: Int = 42
+    static let lakeShoreWestRows: Int = 26
+}
+
+// MARK: - World (Nono Grove)
+
+extension World {
+    static let nonoGroveCols: Int = 40
+    static let nonoGroveRows: Int = 32
+}
+
+// MARK: - World (Monontoe's Lair)
+
+extension World {
+    static let monontoeLairCols: Int = 44
+    static let monontoeLairRows: Int = 34
+}
+
 // MARK: - Physics Categories
 
 enum PhysicsCategory {
@@ -54,6 +75,8 @@ enum PhysicsCategory {
     static let key:            UInt32 = 1 << 12
     static let snackBag:       UInt32 = 1 << 13
     static let softGround:     UInt32 = 1 << 14
+    static let waterSwitch:    UInt32 = 1 << 15
+    static let bossBody:       UInt32 = 1 << 16
 }
 
 // MARK: - Player
@@ -243,12 +266,54 @@ enum EnemyProjectileConst {
     static let lifetime: TimeInterval = 2.5
 }
 
+// MARK: - ET Constants
+
+enum ETConst {
+    static let maxHealth                          = 4
+    static let stunTouchCooldown: TimeInterval    = 0.5
+    static let stunTouchHitboxSize                = CGSize(width: 32, height: 28)
+    static let stunTouchHitboxOffset: CGFloat     = 22
+    static let stunDuration: TimeInterval         = 1.5
+    static let floatDuration: TimeInterval        = 2.5
+    static let floatSpeedMultiplier: CGFloat      = 1.5
+}
+
+// MARK: - Monontoe Constants
+
+enum MonontoeConst {
+    static let health                            = 12
+    static let size: CGSize                      = CGSize(width: 48, height: 48)
+    static let physicsRadius: CGFloat            = 20
+    static let phase2Threshold                   = 8     // transition at 8 HP
+    static let phase3Threshold                   = 4     // transition at 4 HP
+    static let chaseSpeed: CGFloat               = 90
+    static let phase3SpeedMult: CGFloat          = 1.6
+    static let chargeSpeed: CGFloat              = 260
+    static let chargeDuration: TimeInterval      = 0.22
+    static let chargeCooldown: TimeInterval      = 3.0
+    static let tailWhipRadius: CGFloat           = 72
+    static let tailWhipCooldown: TimeInterval    = 2.8
+    static let groundSlamRadius: CGFloat         = 120
+    static let groundSlamCooldown: TimeInterval  = 4.5
+    static let summonCooldown: TimeInterval      = 6.0
+    static let damage                            = 2
+    static let knockback: CGFloat                = 60     // boss barely gets knocked back
+}
+
+// MARK: - Water Switch
+
+enum WaterSwitchConst {
+    static let size: CGSize                   = CGSize(width: 26, height: 26)
+    static let correctOrder: [Int]            = [1, 2, 0]  // green → blue → red
+}
+
 // MARK: - Character Types
 
 enum CharacterType: String, CaseIterable {
     case wiz
     case bob
     case babeee
+    case et
 }
 
 // MARK: - Colours (Salt World Lake palette)
@@ -293,6 +358,28 @@ extension Palette {
     static let celebSparkle = SKColor(red: 1.00, green: 0.90, blue: 0.30, alpha: 1) // celebration yellow
     static let babeeBody    = SKColor(red: 0.98, green: 0.78, blue: 0.85, alpha: 1) // pale pink
     static let babeeAccent  = SKColor(red: 0.95, green: 0.55, blue: 0.70, alpha: 1) // darker pink
+    static let etBody       = SKColor(red: 0.65, green: 0.90, blue: 0.78, alpha: 1) // pale mint
+    static let etAccent     = SKColor(red: 0.35, green: 0.72, blue: 0.58, alpha: 1) // deeper mint
+    static let etGlow       = SKColor(red: 0.80, green: 1.00, blue: 0.88, alpha: 1) // bioluminescent
+}
+
+// MARK: - Stage 5 Colours
+
+extension Palette {
+    static let monontoeBody   = SKColor(red: 0.15, green: 0.38, blue: 0.45, alpha: 1) // dark teal
+    static let monontoeAccent = SKColor(red: 0.28, green: 0.58, blue: 0.68, alpha: 1) // lighter teal
+    static let monontoeRage   = SKColor(red: 0.80, green: 0.12, blue: 0.12, alpha: 1) // enraged red
+    static let groveGrass     = SKColor(red: 0.25, green: 0.62, blue: 0.32, alpha: 1) // lush green
+    static let groveDark      = SKColor(red: 0.14, green: 0.40, blue: 0.20, alpha: 1) // dark grove
+    static let groveFloor     = SKColor(red: 0.32, green: 0.74, blue: 0.38, alpha: 1) // bright grass
+    static let bossFloor      = SKColor(red: 0.16, green: 0.12, blue: 0.22, alpha: 1) // dark arena
+    static let bossWall       = SKColor(red: 0.08, green: 0.06, blue: 0.12, alpha: 1) // void black
+    static let switchRed      = SKColor(red: 0.92, green: 0.18, blue: 0.18, alpha: 1)
+    static let switchGreen    = SKColor(red: 0.18, green: 0.88, blue: 0.32, alpha: 1)
+    static let switchBlue     = SKColor(red: 0.22, green: 0.48, blue: 0.98, alpha: 1)
+    static let switchGlow     = SKColor(red: 1.00, green: 0.96, blue: 0.40, alpha: 1)
+    static let floodWater     = SKColor(red: 0.28, green: 0.58, blue: 0.88, alpha: 0.55)
+    static let stunEffect     = SKColor(red: 0.80, green: 0.95, blue: 0.30, alpha: 1) // ET stun
 }
 
 // MARK: - Z-Positions (scene-level)

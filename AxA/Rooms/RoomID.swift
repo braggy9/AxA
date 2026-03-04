@@ -10,6 +10,9 @@ enum RoomID {
     case crystalFields
     case lakeShoreEast
     case saltCave
+    case lakeShoreWest
+    case nonoGrove
+    case monontoeLair
 }
 
 // MARK: - Edge
